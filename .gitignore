@@ -11,3 +11,6 @@ scripts/apply-*.mjs
 # локальные выгрузки и кеш
 data/raw/
 *.log
+
+# модели tesseract.js — качаются сами при первом запуске, десятки мегабайт
+*.traineddata

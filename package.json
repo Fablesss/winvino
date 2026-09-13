@@ -7,10 +7,16 @@
   "scripts": {
     "db:migrate": "node scripts/migrate.mjs",
     "db:status": "node scripts/migrate.mjs --status",
-    "catalog:sync": "node scripts/sync-catalog.mjs"
+    "db:verify": "node scripts/db-verify.mjs",
+    "catalog:sync": "node scripts/sync-catalog.mjs",
+    "check:norm-parity": "node scripts/check-norm-parity.mjs",
+    "selftest": "node scripts/selftest-catalog.mjs --workers 6",
+    "selftest:report": "node scripts/report-selftest.mjs"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "sharp": "^0.35.4",
+    "tesseract.js": "^7.0.0"
   }
 }
