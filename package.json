@@ -1,0 +1,16 @@
+{
+  "name": "winvino",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Сканер этикеток российского вина: зеркало каталога vino-svoe.ru + матчер по OCR",
+  "scripts": {
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:status": "node scripts/migrate.mjs --status",
+    "catalog:sync": "node scripts/sync-catalog.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3"
+  }
+}
