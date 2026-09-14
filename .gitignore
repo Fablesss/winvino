@@ -1,5 +1,9 @@
 node_modules/
 
+# Python-окружение под PaddleOCR
+.venv-ocr/
+__pycache__/
+
 # секреты — никогда в репозиторий
 .env
 .env.*

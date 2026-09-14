@@ -60,7 +60,9 @@ await Promise.all(workers.map(async (worker) => {
     try {
       const raw = await fetchRender(w.image_url);
       sha = crypto.createHash('sha256').update(raw).digest('hex');
-      file = path.join('data/raw/renders', path.basename(w.image_url));
+      // Прямые слеши, а не path.join: на Windows он даёт обратные, и один кадр в
+      // label_scans получил бы разные image_path у разных движков OCR.
+      file = `data/raw/renders/${path.basename(w.image_url)}`;
       const png = await preprocess(raw, VARIANT);
       const t = Date.now();
       const { data } = await worker.recognize(png);
@@ -112,7 +114,7 @@ await client.query(
    FROM unnest($4::text[], $5::text[], $6::text[], $7::int[], $8::text[], $9::text[],
                $10::real[], $11::int[], $12::jsonb[])
      AS p(image_path, sha, ocr_text, ocr_ms, truth, pred, score, rank, payload)
-   ON CONFLICT (source, image_path, truth_wine_slug) DO UPDATE SET
+   ON CONFLICT (source, image_path, truth_wine_slug, ocr_provider) DO UPDATE SET
      ocr_provider = EXCLUDED.ocr_provider,
      ocr_text = EXCLUDED.ocr_text,
      ocr_ms = EXCLUDED.ocr_ms,

@@ -11,10 +11,10 @@
 // сравнения со ВСЕМИ кандидатами, что в SQL означало бы полный проход на каждый скан.
 // Триграммные GIN-индексы в базе остаются рабочим инструментом для SQL-пути поиска.
 import {
-  blendedScore, coverageAndMass, gramsOf, makeIdf, normLabel, scoreVocabulary, tokenize,
+  blendedScore, coverageAndMass, foldGreek, gramsOf, makeIdf, normLabel, scoreVocabulary, tokenize,
 } from './fuzzy.mjs';
 
-export const MATCHER_VERSION = 'idf-mass-translit-v3';
+export const MATCHER_VERSION = 'idf-mass-translit-skeleton-v4';
 
 /** Веса финального счёта. Подбирать по eval-набору, а не на глаз. */
 const W_WINERY = 0.40;
@@ -79,7 +79,8 @@ export async function loadIndex(client) {
  * @returns {{ocrNorm: string, wineries: Array, candidates: Array}}
  */
 export function matchLabel(index, ocrText, { limit = 5, truthSlug = null } = {}) {
-  const ocrNorm = normLabel(ocrText);
+  // Греческие двойники сворачиваются до нормализации, иначе она выбросит их как мусор.
+  const ocrNorm = normLabel(foldGreek(ocrText));
   const ocrTokens = tokenize(ocrNorm);
   if (!ocrTokens.length) {
     return { ocrNorm, wineries: [], candidates: [], truth: truthSlug ? { rank: null } : null };

@@ -35,6 +35,27 @@ const TRANSLIT = {
  */
 export const translit = (s) => [...(s ?? '')].map((ch) => TRANSLIT[ch] ?? ch).join('');
 
+// Греческие двойники кириллицы. Распознаватель eslav_PP-OCRv5 на заглавных иногда
+// выдаёт греческие буквы вместо русских: «5ΛΑΗ» — это «БЛАН». normLabel() такие
+// символы просто выбросил бы как пунктуацию, поэтому сворачиваем их ДО нормализации.
+// В названиях российских вин греческих букв нет, так что замена безопасна.
+const GREEK = {
+  α: 'а', β: 'в', γ: 'г', δ: 'д', ε: 'е', η: 'н', κ: 'к', λ: 'л', μ: 'м', ο: 'о',
+  π: 'п', ρ: 'р', τ: 'т', υ: 'у', φ: 'ф', χ: 'х',
+};
+export const foldGreek = (s) => [...(s ?? '').toLowerCase()].map((ch) => GREEK[ch] ?? ch).join('');
+
+// Латинские буквы и цифры, которые НАЧЕРТАНИЕМ совпадают с русскими заглавными.
+// OCR пишет «MACCAHДPA» вместо «МАССАНДРА» и «PO3E» вместо «РОЗЕ». Транслит тут
+// бессилен: латинская C выглядит как С, но транслит превращает С в «s», а не в «c».
+// Сворачивается ОБЕ стороны сравнения, поэтому настоящие латинские слова тоже
+// переходят в это пространство одинаково и продолжают совпадать друг с другом.
+const SKELETON = {
+  a: 'а', b: 'в', c: 'с', e: 'е', h: 'н', k: 'к', m: 'м', o: 'о', p: 'р', t: 'т',
+  x: 'х', y: 'у', 3: 'з', 0: 'о',
+};
+export const skeleton = (s) => [...(s ?? '')].map((ch) => SKELETON[ch] ?? ch).join('');
+
 /** Триграммы с паддингом по краям, как в pg_trgm. */
 export function trigrams(str) {
   const s = `  ${str} `;
@@ -65,8 +86,12 @@ const jaccard = (A, B) => {
   return shared / (A.size + B.size - shared);
 };
 
-/** Триграммы слова в двух пространствах: как есть и в транслите. */
-export const gramsOf = (token) => ({ g: trigrams(token), t: trigrams(translit(token)) });
+/** Триграммы слова в трёх пространствах: как есть, в транслите и по начертанию. */
+export const gramsOf = (token) => ({
+  g: trigrams(token),
+  t: trigrams(translit(token)),
+  s: trigrams(skeleton(token)),
+});
 
 export function scoreVocabulary(ocrTokens, vocab, minSim = 0.55) {
   const ocr = ocrTokens.map((tok) => ({ tok, ...gramsOf(tok) }));
@@ -75,8 +100,9 @@ export function scoreVocabulary(ocrTokens, vocab, minSim = 0.55) {
     let best = 0;
     for (const o of ocr) {
       if (token === o.tok) { best = 1; break; }
-      // max по двум пространствам: кириллица против латиницы иначе даёт 0.
-      const sim = Math.max(jaccard(grams.g, o.g), jaccard(grams.t, o.t));
+      // max по трём пространствам: кириллица против латиницы иначе даёт 0,
+      // а латинские двойники русских букв («MACCAHДPA») не ловит даже транслит.
+      const sim = Math.max(jaccard(grams.g, o.g), jaccard(grams.t, o.t), jaccard(grams.s, o.s));
       if (sim > best) best = sim;
     }
     if (best >= minSim) scores.set(token, best);

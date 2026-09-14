@@ -11,7 +11,13 @@
     "catalog:sync": "node scripts/sync-catalog.mjs",
     "check:norm-parity": "node scripts/check-norm-parity.mjs",
     "selftest": "node scripts/selftest-catalog.mjs --workers 6",
-    "selftest:report": "node scripts/report-selftest.mjs"
+    "selftest:report": "node scripts/report-selftest.mjs",
+    "selftest:rematch": "node scripts/rematch-scans.mjs",
+    "ocr:paddle:setup": "py -3.12 -m venv .venv-ocr && .venv-ocr\\Scripts\\python.exe -m pip install -r ocr/requirements.lock.txt",
+    "ocr:paddle:pilot": "node scripts/paddle-pilot.mjs --n 20",
+    "ocr:paddle:list": "node scripts/paddle-selftest.mjs list",
+    "ocr:paddle:run": ".venv-ocr\\Scripts\\python.exe ocr/paddle_ocr.py --list data/raw/paddle-full/list.txt --out data/raw/paddle-full/result.jsonl",
+    "ocr:paddle:ingest": "node scripts/paddle-selftest.mjs ingest"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
