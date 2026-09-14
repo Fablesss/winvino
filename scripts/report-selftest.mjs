@@ -72,7 +72,7 @@ try {
     const n = h.common;
     console.log(`\n=== лицом к лицу на ${n} общих кадрах (top-1) ===`);
     console.log(`  оба верно                ${String(h.both_top1).padStart(5)}  ${pct(h.both_top1, n)}`);
-    console.log(`  только ${a.padEnd(18)}${String(h.only_a).padStart(5)}  ${pct(h.only_a, n)}`);
+    console.log(`  только ${a.slice(0, 18).padEnd(18)}${String(h.only_a).padStart(5)}  ${pct(h.only_a, n)}`);
     console.log(`  только ${b.slice(0, 18).padEnd(18)}${String(h.only_b).padStart(5)}  ${pct(h.only_b, n)}`);
     console.log(`  оба мимо                 ${String(h.neither).padStart(5)}  ${pct(h.neither, n)}`);
     console.log(`  хотя бы один верно       ${String(h.either_top1).padStart(5)}  ${pct(h.either_top1, n)}  <- потолок объединения`);
