@@ -1,8 +1,12 @@
 node_modules/
 
-# Python-окружение под PaddleOCR
+# Python-окружения: PaddleOCR и распознавание (torch)
 .venv-ocr/
+.venv-ml/
 __pycache__/
+
+# исходный датасет от организатора: архивы дампа uploads на 2+ ГБ
+Датасет/
 
 # секреты — никогда в репозиторий
 .env
