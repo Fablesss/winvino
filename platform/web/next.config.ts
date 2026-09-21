@@ -18,6 +18,8 @@ const FRAME_ANCESTORS = "frame-ancestors 'self' https://web.telegram.org";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Docker-образ (deploy/web.Dockerfile) собирается как standalone; локально и в e2e — `next start`.
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   transpilePackages: ["@winvino/contract"],
   turbopack: { root: workspaceRoot },
   outputFileTracingRoot: workspaceRoot,

@@ -6,6 +6,8 @@ Top-1 `slug` из каталога. Каталог — CSV-выгрузка Stra
 
 ## Запуск
 
+Продакшен (Dokploy, Docker) — `docs/DEPLOY.md`. Локально:
+
 ```
 npm run ml:setup                    # .venv-ml: torch 2.14 + CUDA 12.6, timm, open_clip (≈3 ГБ)
 npm run ocr:paddle:setup            # .venv-ocr: PaddleOCR (см. DATABASE.md)

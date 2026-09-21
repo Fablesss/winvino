@@ -1,0 +1,4 @@
+# Скрипты и Dockerfile исполняются в Linux-контейнерах: CRLF из Windows-чекаута ломает shebang.
+*.sh          text eol=lf
+*.Dockerfile  text eol=lf
+Dockerfile    text eol=lf

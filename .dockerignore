@@ -1,0 +1,16 @@
+# Контекст образа распознавателя — корень репозитория. В образ идут только ml/, ocr/, scripts/,
+# deploy/ и манифесты npm; остальное — вон, особенно гигабайты данных и окружений.
+.git
+.claude
+.venv-*
+**/node_modules
+**/__pycache__
+data
+Датасет
+platform
+docs
+migrations
+*.traineddata
+*.log
+.env
+.env.*

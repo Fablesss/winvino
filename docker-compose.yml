@@ -1,0 +1,73 @@
+# Деплой в Dokploy: сервис типа Compose, путь к файлу — docker-compose.yml. Подробно — docs/DEPLOY.md.
+#
+# Домены назначаются в UI Dokploy (Domains): web → порт 3000, при необходимости api → 8787
+# (для бота и нативных клиентов). Traefik-метки Dokploy добавляет сам. Распознаватель наружу
+# не выставляется — только внутренняя сеть.
+#
+# Переменные (Dokploy → Environment пишет их в .env рядом с этим файлом):
+#   DATABASE_URL      Postgres с каталогом вин (обязательно)
+#   ARTIFACTS_URL     бандл артефактов модели (обязательно), ARTIFACTS_SHA256 — его sha256
+#   ARTIFACTS_TOKEN   токен чтения репозитория, если бандл в приватном релизе GitHub
+#   CORS_ORIGINS      origin браузерных клиентов с чужих доменов; веб ходит через свой /api
+services:
+  recognizer:
+    build:
+      context: .
+      dockerfile: deploy/recognizer.Dockerfile
+    restart: unless-stopped
+    environment:
+      ARTIFACTS_URL: ${ARTIFACTS_URL:?ARTIFACTS_URL не задан}
+      ARTIFACTS_SHA256: ${ARTIFACTS_SHA256:?ARTIFACTS_SHA256 не задан}
+      ARTIFACTS_TOKEN: ${ARTIFACTS_TOKEN:-}
+      RECOGNIZER_MAX_IN_FLIGHT: ${RECOGNIZER_MAX_IN_FLIGHT:-4}
+      # Отказ «нет в каталоге» только для контракта организатора (/v1/eval/predict); API решает сам.
+      EVAL_MIN_VISUAL: ${EVAL_MIN_VISUAL:-0}
+    volumes:
+      - recognizer-data:/data
+    expose:
+      - "8080"
+    networks:
+      - internal
+
+  api:
+    build:
+      context: platform
+      dockerfile: ../deploy/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      RECOGNIZER: model
+      RECOGNIZER_URL: http://recognizer:8080
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL не задан}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      RECOGNIZE_TIMEOUT_MS: ${RECOGNIZE_TIMEOUT_MS:-30000}
+    expose:
+      - "8787"
+    depends_on:
+      - recognizer
+    networks:
+      - internal
+      - dokploy-network
+
+  web:
+    build:
+      context: platform
+      dockerfile: ../deploy/web.Dockerfile
+      args:
+        WINVINO_API_URL: http://api:8787
+    restart: unless-stopped
+    expose:
+      - "3000"
+    depends_on:
+      - api
+    networks:
+      - internal
+      - dokploy-network
+
+volumes:
+  recognizer-data:
+
+networks:
+  internal:
+  # Сеть Traefik в Dokploy. Локально перед `docker compose up`: docker network create dokploy-network
+  dokploy-network:
+    external: true
