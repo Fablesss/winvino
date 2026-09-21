@@ -9,6 +9,7 @@ COPY package.json package-lock.json ./
 COPY contract/package.json contract/
 COPY api/package.json api/
 COPY web/package.json web/
+COPY bot/package.json bot/
 RUN npm ci -w @winvino/web -w @winvino/contract
 COPY contract/ contract/
 COPY web/ web/

@@ -12,6 +12,7 @@ Next.js-страница, которая работает и как Telegram Min
 | `contract/` | zod-схемы API v1, коды ошибок, генерация OpenAPI, fetch-клиент на TypeScript. **Единственный источник правды о контракте** |
 | `api/` | Hono на Node 24: `POST /v1/recognitions`, проверка фото, мок-распознаватель |
 | `web/` | Next.js 16: Mini App + PWA, одна страница |
+| `bot/` | Telegram-бот: фото в чат → карточка вина. Второй клиент того же API |
 
 ## Команды
 
@@ -21,6 +22,7 @@ Node ≥ 24: API и контракт исполняются из `.ts` напр�
 npm install              # из platform/
 npm run dev:api          # API на http://127.0.0.1:8787 (+ /docs — интерактивная документация)
 npm run dev:web          # веб на http://localhost:3000, /api/* проксируется на API
+npm run dev:bot          # бот (long polling); нужен bot/.env с TELEGRAM_BOT_TOKEN, см. bot/.env.example
 npm run check            # typecheck + lint + unit/контрактные тесты всех пакетов
 npm run e2e -w @winvino/web   # Playwright: сборка + прогон в системном Edge
 npm run openapi:write    # перегенерировать contract/openapi.json после правки схем
@@ -105,6 +107,33 @@ RECOGNIZER=model RECOGNIZER_URL=http://127.0.0.1:8080 DATABASE_URL=postgresql://
 
 Подключение: в @BotFather — `/newapp` или кнопка меню с HTTPS-адресом веба. Для разработки
 хватает одного туннеля (ngrok, cloudflared) на порт веба: API идёт через тот же origin по `/api`.
+
+## Telegram-бот
+
+`bot/` — long polling (`getUpdates`), без вебхука: публичный адрес и порт не нужны. Зависимостей
+Telegram нет — тонкий клиент Bot API в `bot/src/telegram/botApi.ts`.
+
+- Фото в чат (или картинка файлом до 10 МБ) → `getFile` → `POST /v1/recognitions` через
+  `createWinvinoClient`. `X-Request-Id` = `update_id`: по нему запрос ищется и в логах API, и в
+  логах бота (JSON-строки с `updateId`). Из размеров фото берётся наибольший не длиннее 1600px.
+- `matched`/`ambiguous` — фото бутылки с карточкой в подписи, кнопки «Карточка в каталоге» и
+  «Открыть сканер» (Mini App, `WEB_APP_URL`). Для `ambiguous` — «Не уверены…» и похожие вина
+  ссылками на каталог. `not_found` — подсказка по `reason`. Ошибка API — её `message` и номер запроса.
+- Тексты — `bot/src/replies.ts`, чистые функции.
+- Кнопку Mini App Telegram пускает только в личных чатах — в группах бот отвечает без неё.
+- Апдейты обрабатываются параллельно; подтверждаются сразу после выдачи, так что фото, на
+  котором процесс упал, повторно не придёт.
+
+Подводные камни:
+
+- **Фото бутылки нельзя отдать Telegram ссылкой.** Ресайзер каталога отвечает WebP с прозрачным
+  фоном и `Content-Type: application/octet-stream`, а `sendPhoto` по URL требует верный MIME. Бот
+  скачивает картинку и загружает её JPEG-ом (`sharp`, фон — цвет бумаги веба, холст 3:4). Не
+  вышло — та же карточка уходит текстом.
+- **FormData из Node переводит `\n` в строковых полях в `\r\n`** (так велит спецификация), поэтому
+  multipart для `sendPhoto` собирается вручную (`encodeMultipart`).
+- **Один токен — один процесс.** Второй `getUpdates` с тем же токеном получает 409 Conflict, как и
+  бот с настроенным вебхуком. Для разработки заведите отдельного бота в @BotFather.
 
 ## PWA
 
