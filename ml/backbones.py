@@ -14,27 +14,40 @@ from PIL import Image
 from .common import letterbox
 
 
+IMAGENET = ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+OPENAI_CLIP = ((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+SIGLIP = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+
+
 @dataclass(frozen=True)
 class Spec:
     lib: str        # "timm" | "open_clip"
     name: str
     pretrained: str
     size: int
+    # Нормализация зафиксирована здесь, а не берётся из библиотеки: без предобученных весов
+    # open_clip подставляет среднее OpenAI CLIP даже для SigLIP (обучен с 0.5/0.5), и
+    # эмбеддинги молча разъезжаются с индексом.
+    norm: tuple[tuple[float, float, float], tuple[float, float, float]]
 
 
 SPECS: dict[str, Spec] = {
-    "dinov2-s": Spec("timm", "vit_small_patch14_dinov2.lvd142m", "", 224),
-    "dinov2-b": Spec("timm", "vit_base_patch14_dinov2.lvd142m", "", 224),
-    "clip-b16": Spec("open_clip", "ViT-B-16", "laion2b_s34b_b88k", 224),
-    "siglip2-b16": Spec("open_clip", "ViT-B-16-SigLIP2-256", "webli", 256),
-    "siglip2-b16-384": Spec("open_clip", "ViT-B-16-SigLIP2-384", "webli", 384),
+    "dinov2-s": Spec("timm", "vit_small_patch14_dinov2.lvd142m", "", 224, IMAGENET),
+    "dinov2-b": Spec("timm", "vit_base_patch14_dinov2.lvd142m", "", 224, IMAGENET),
+    "clip-b16": Spec("open_clip", "ViT-B-16", "laion2b_s34b_b88k", 224, OPENAI_CLIP),
+    "siglip2-b16": Spec("open_clip", "ViT-B-16-SigLIP2-256", "webli", 256, SIGLIP),
+    "siglip2-b16-384": Spec("open_clip", "ViT-B-16-SigLIP2-384", "webli", 384, SIGLIP),
 }
 
 
 class Encoder(torch.nn.Module):
-    """Визуальная башня + препроцессинг. `size` можно переопределить (DINOv2 тянет любой кратный 14)."""
+    """Визуальная башня + препроцессинг. `size` можно переопределить (DINOv2 тянет любой кратный 14).
 
-    def __init__(self, key: str, size: int | None = None):
+    `pretrained=False` — только архитектура, без скачивания весов: так грузится сервис, у
+    которого все веса визуальной башни лежат в дообученном чекпойнте.
+    """
+
+    def __init__(self, key: str, size: int | None = None, pretrained: bool = True):
         super().__init__()
         spec = SPECS[key]
         self.key = key
@@ -42,16 +55,13 @@ class Encoder(torch.nn.Module):
         if spec.lib == "timm":
             import timm
 
-            self.net = timm.create_model(spec.name, pretrained=True, num_classes=0, img_size=self.size)
-            cfg = self.net.pretrained_cfg
-            mean, std = cfg["mean"], cfg["std"]
+            self.net = timm.create_model(spec.name, pretrained=pretrained, num_classes=0, img_size=self.size)
         else:
             import open_clip
 
-            model, _, _ = open_clip.create_model_and_transforms(spec.name, pretrained=spec.pretrained)
+            model, _, _ = open_clip.create_model_and_transforms(spec.name, pretrained=spec.pretrained if pretrained else None)
             self.net = model.visual  # текстовая башня не нужна — не держим её в 4 ГБ видеопамяти
-            mean = getattr(self.net, "image_mean", None) or (0.48145466, 0.4578275, 0.40821073)
-            std = getattr(self.net, "image_std", None) or (0.26862954, 0.26130258, 0.27577711)
+        mean, std = spec.norm
         self.register_buffer("mean", torch.tensor(mean).view(1, 3, 1, 1), persistent=False)
         self.register_buffer("std", torch.tensor(std).view(1, 3, 1, 1), persistent=False)
 

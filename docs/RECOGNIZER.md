@@ -11,7 +11,7 @@ npm run ml:setup                    # .venv-ml: torch 2.14 + CUDA 12.6, timm, op
 npm run ocr:paddle:setup            # .venv-ocr: PaddleOCR (см. DATABASE.md)
 "C:\Program Files\7-Zip\7z.exe" x Датасет\prod-svoe-vino-strapi.part1.rar -odata\raw\strapi
 npm run dataset:manifest            # slug → файл-оригинал, нужен доступ к базе (см. ниже)
-npm run serve:eval                  # http://127.0.0.1:8080/v1/eval/predict
+npm run serve:recognizer            # http://127.0.0.1:8080: /v1/eval/predict, /v1/recognize, /health
 ```
 
 Проверка организатора, из распакованного `eval.zip` (нужны bash, curl, jq — Git Bash):

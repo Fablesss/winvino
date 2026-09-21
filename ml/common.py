@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,8 +14,11 @@ import numpy as np
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
-DATASET_DIR = ROOT / "data" / "raw" / "dataset"
-MODEL_DIR = ROOT / "data" / "raw" / "model"
+# Корень данных: манифест, чекпойнты, индекс, кеши. В контейнере — том с распакованным
+# бандлом артефактов (ml/export_bundle.py), локально — data/raw репозитория.
+DATA_DIR = Path(os.environ.get("WINVINO_DATA_DIR") or ROOT / "data" / "raw")
+DATASET_DIR = DATA_DIR / "dataset"
+MODEL_DIR = DATA_DIR / "model"
 CATALOG_PATH = DATASET_DIR / "catalog.jsonl"
 
 # Нейтральная заливка полей при letterbox: среднее ImageNet, не смещает ни один класс.
@@ -58,7 +62,7 @@ def load_rgb(path: Path | str) -> Image.Image:
         return ImageOps.exif_transpose(im).convert("RGB")
 
 
-CACHE_DIR = ROOT / "data" / "raw" / "cache"
+CACHE_DIR = DATA_DIR / "cache"
 
 
 def load_cached(path: Path, max_side: int = 1024) -> Image.Image:

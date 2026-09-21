@@ -37,10 +37,11 @@ STRATEGIES = {
 
 
 def load_encoder(model: str, checkpoint: str | None, device: torch.device) -> Encoder:
-    enc = Encoder(model)
+    """С чекпойнтом предобученные веса не качаются: в нём вся визуальная башня целиком."""
+    enc = Encoder(model, pretrained=checkpoint is None)
     if checkpoint:
         state = torch.load(checkpoint, map_location="cpu")
-        enc.net.load_state_dict(state["net"])
+        enc.net.load_state_dict(state["net"])  # strict: недостающий ключ — ошибка, а не случайные веса
     return enc.to(device).eval()
 
 

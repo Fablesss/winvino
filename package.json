@@ -24,15 +24,14 @@
     "ml:eval": ".venv-ml\\Scripts\\python.exe -m ml.eval_visual",
     "ml:train": ".venv-ml\\Scripts\\python.exe -u -m ml.train",
     "recognizer:eval": "node scripts/eval-recognizer.mjs",
-    "serve:eval": "node scripts/serve-eval.mjs"
+    "serve:recognizer": "node scripts/serve-recognizer.mjs",
+    "bundle:export": ".venv-ml\\Scripts\\python.exe -m ml.export_bundle"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "1.1.0",
     "dotenv": "^17.2.3",
     "pg": "^8.16.3",
     "sharp": "^0.35.4",
     "tesseract.js": "^7.0.0"
-  },
-  "devDependencies": {
-    "@sindresorhus/slugify": "^1.1.0"
   }
 }

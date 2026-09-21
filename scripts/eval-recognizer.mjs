@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_WEIGHTS, fitWeights, scoreCandidates } from './lib/fusion.mjs';
 import { readManifest } from './lib/catalog-manifest.mjs';
-import { CONFIG_PATH, createRecognizer, loadConfig, MANIFEST_PATH, ROOT } from './lib/recognizer.mjs';
+import { CONFIG_PATH, createRecognizer, DATA_DIR, loadConfig, MANIFEST_PATH, ROOT } from './lib/recognizer.mjs';
 
 const arg = (name, fallback = null) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -88,7 +88,8 @@ async function collect(queries, checkpoint, tag) {
   const cache = new Map();
   if (fs.existsSync(OCR_CACHE)) for (const r of readJsonl(OCR_CACHE)) cache.set(r.key, r.value);
   const sizeBefore = cache.size;
-  const rec = await createRecognizer({ config: { checkpoint, weights: DEFAULT_WEIGHTS } });
+  const rec = createRecognizer({ config: { checkpoint: checkpoint && path.resolve(ROOT, checkpoint), weights: DEFAULT_WEIGHTS } });
+  await rec.ready;
   const records = [];
   const ms = [];
   try {
@@ -140,7 +141,8 @@ if (arg('fit')) {
   if (flag('write-config')) {
     const cfg = {
       ...loadConfig(),
-      checkpoint: checkpoint ? path.relative(ROOT, path.resolve(ROOT, checkpoint)).split(path.sep).join('/') : null,
+      // От корня артефактов: тот же конфиг работает и локально, и из тома с бандлом в контейнере.
+      checkpoint: checkpoint ? path.relative(DATA_DIR, path.resolve(ROOT, checkpoint)).split(path.sep).join('/') : null,
       weights,
       fitted: { on: `synthetic ${a}:${b}`, at: new Date().toISOString(), heldout: m },
     };

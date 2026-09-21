@@ -29,16 +29,22 @@ class VisualIndex:
         return s.reshape(len(self.ref_names), -1).max(axis=1)
 
 
+def index_cache_path(catalog: list[CatalogItem], tag: str):
+    """Файл индекса: ключ — тег модели, список референсов и виды. Им же пользуется бандл."""
+    names = sorted({c.image.name for c in catalog})
+    key = hashlib.md5(("\n".join(names) + "|" + ",".join(REF_VIEWS)).encode()).hexdigest()[:10]
+    return MODEL_DIR / "index" / f"{tag}-{key}.npz"
+
+
 def build_index(encoder: Encoder, catalog: list[CatalogItem], tag: str) -> VisualIndex:
-    """Эмбеддинги референсов с кешем на диске: ключ — тег модели и список файлов."""
+    """Эмбеддинги референсов с кешем на диске. Без кеша нужны сами картинки каталога."""
     by_image: dict[str, list[str]] = {}
     item_by_image: dict[str, CatalogItem] = {}
     for c in catalog:
         by_image.setdefault(c.image.name, []).append(c.slug)
         item_by_image.setdefault(c.image.name, c)
     names = sorted(by_image)
-    key = hashlib.md5(("\n".join(names) + "|" + ",".join(REF_VIEWS)).encode()).hexdigest()[:10]
-    cache = MODEL_DIR / "index" / f"{tag}-{key}.npz"
+    cache = index_cache_path(catalog, tag)
     if cache.exists():
         emb = np.load(cache)["emb"]
     else:
