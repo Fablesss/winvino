@@ -11,17 +11,17 @@
 // сравнения со ВСЕМИ кандидатами, что в SQL означало бы полный проход на каждый скан.
 // Триграммные GIN-индексы в базе остаются рабочим инструментом для SQL-пути поиска.
 import {
-  blendedScore, coverageAndMass, foldGreek, gramsOf, makeIdf, normLabel, scoreVocabulary, tokenize,
+  blendedScore, coverageAndMass, expandAliases, foldGreek, gramsOf, makeIdf, normLabel, scoreVocabulary, tokenize,
 } from './fuzzy.mjs';
 
-export const MATCHER_VERSION = 'idf-mass-translit-skeleton-v4';
+export const MATCHER_VERSION = 'idf-mass-translit-skeleton-alias-v5';
 
 /** Веса финального счёта. Подбирать по eval-набору, а не на глаз. */
 const W_WINERY = 0.40;
 const W_TITLE = 0.50;
 const W_CATEGORY = 0.10;
 
-/** Загружает каталог и всё, что считается один раз, а не на каждый скан. */
+/** Загружает каталог из зеркала в базе. */
 export async function loadIndex(client) {
   const { rows: wineries } = await client.query(
     'SELECT id, name, name_norm, slug_norm FROM manufacturers',
@@ -30,7 +30,16 @@ export async function loadIndex(client) {
     SELECT w.id, w.slug, w.title, w.title_norm, w.slug_norm, w.manufacturer_id,
            w.wine_color, w.sweetness, w.category_name, w.public_rating
     FROM wines w`);
+  return buildIndex(wineries, wines);
+}
 
+/**
+ * Индекс из готовых строк — всё, что считается один раз, а не на каждый скан.
+ * wineries: {id, name, name_norm, slug_norm}; wines: {id, slug, title, title_norm,
+ * slug_norm, manufacturer_id, wine_color, sweetness}. Источник — база (`loadIndex`)
+ * или манифест датасета (`scripts/lib/catalog-manifest.mjs`).
+ */
+export function buildIndex(wineries, wines) {
   const df = (docs, pick) => {
     const map = new Map();
     for (const d of docs) {
@@ -81,7 +90,7 @@ export async function loadIndex(client) {
 export function matchLabel(index, ocrText, { limit = 5, truthSlug = null } = {}) {
   // Греческие двойники сворачиваются до нормализации, иначе она выбросит их как мусор.
   const ocrNorm = normLabel(foldGreek(ocrText));
-  const ocrTokens = tokenize(ocrNorm);
+  const ocrTokens = expandAliases(tokenize(ocrNorm));
   if (!ocrTokens.length) {
     return { ocrNorm, wineries: [], candidates: [], truth: truthSlug ? { rank: null } : null };
   }

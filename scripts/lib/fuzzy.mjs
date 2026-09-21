@@ -56,6 +56,39 @@ const SKELETON = {
 };
 export const skeleton = (s) => [...(s ?? '')].map((ch) => SKELETON[ch] ?? ch).join('');
 
+// Винные термины и сорта в европейском написании → русская форма из каталога.
+// Транслит их не сводит: «noir» и «нуар» (транслит «nuar») почти не делят триграмм,
+// «sauvignon» и «совиньон» («sovinon») тоже. На этикетке сорт часто напечатан по-французски,
+// а в каталоге записан по-русски — или наоборот, поэтому словарь работает в обе стороны.
+const WINE_ALIASES = {
+  noir: 'нуар', pinot: 'пино', blanc: 'блан', blancs: 'блан', gris: 'гри', grigio: 'гриджио',
+  sauvignon: 'совиньон', chardonnay: 'шардоне', cabernet: 'каберне', merlot: 'мерло',
+  riesling: 'рислинг', syrah: 'сира', shiraz: 'шираз', viognier: 'вионье', muscat: 'мускат',
+  moscato: 'мускат', franc: 'фран', rose: 'розе', brut: 'брют', saperavi: 'саперави',
+  sangiovese: 'санджовезе', tempranillo: 'темпранильо', gewurztraminer: 'гевюрцтраминер',
+  traminer: 'траминер', aligote: 'алиготе', rkatsiteli: 'ркацители', marselan: 'марселан',
+  malbec: 'мальбек', semillon: 'семильон', zweigelt: 'цвайгельт', nebbiolo: 'неббиоло',
+  krasnostop: 'красностоп', kokur: 'кокур', cuvee: 'кюве', reserve: 'резерв', extra: 'экстра',
+  sec: 'сек', dry: 'сухое', sweet: 'сладкое', white: 'белое', red: 'красное',
+};
+const ALIAS_REVERSE = Object.fromEntries(Object.entries(WINE_ALIASES).map(([k, v]) => [v, k]));
+
+/**
+ * OCR-токены плюс их винные синонимы. Длинные ключи ловятся и внутри склеенного слова:
+ * OCR часто пишет «PINOT NOIR» как «NOTNOIR».
+ */
+export function expandAliases(tokens) {
+  const out = [...tokens];
+  for (const t of tokens) {
+    if (WINE_ALIASES[t]) out.push(WINE_ALIASES[t]);
+    else if (ALIAS_REVERSE[t]) out.push(ALIAS_REVERSE[t]);
+    else if (t.length >= 6) {
+      for (const [k, v] of Object.entries(WINE_ALIASES)) if (k.length >= 4 && t.includes(k)) out.push(v);
+    }
+  }
+  return [...new Set(out)];
+}
+
 /** Триграммы с паддингом по краям, как в pg_trgm. */
 export function trigrams(str) {
   const s = `  ${str} `;
