@@ -57,16 +57,30 @@ npm run openapi:write    # перегенерировать contract/openapi.jso
 Заголовок `X-Request-Id` можно прислать свой (например, id апдейта в боте) — он вернётся в
 ответе и в теле ошибки.
 
-## Как заменить мок настоящей моделью
+## Распознаватель: мок и модель
 
-1. Реализовать тип `Recognizer` (`api/src/recognizer/recognizer.ts`): на входе проверенное
-   фото (`bytes`, `mimeType`, `width`, `height`) и `AbortSignal`, на выходе — исход
-   распознавания. id, время и дату ставит API.
-2. Добавить ветку в `createRecognizer` (`api/src/server.ts`) и значение в `RECOGNIZER`
-   (`api/src/config.ts`).
-3. Строки каталога превращать в `Wine` через `wineFromCatalogRow`. Форма строки —
-   `CatalogWineRow`: тот же SELECT, которым выгружен мок-каталог.
+`RECOGNIZER=mock` (по умолчанию) — заглушка, `RECOGNIZER=model` — настоящая модель:
 
+```
+RECOGNIZER=model RECOGNIZER_URL=http://127.0.0.1:8080 DATABASE_URL=postgresql://… npm run dev:api
+```
+
+- Фото уходит в сервис распознавания (`scripts/serve-recognizer.mjs` в корне репозитория,
+  `POST /v1/recognize`). Он отдаёт топ-5 слагов с уверенностью, сходство лучшего референса
+  и число прочитанных OCR букв; решение принимает API (`api/src/recognizer/modelRecognizer.ts`).
+- Карточки вин — из Postgres тем же SELECT, что выгрузил мок-каталог (`CatalogWineRow` →
+  `wineFromCatalogRow`). Каталог грузится в память при старте и обновляется раз в
+  `CATALOG_REFRESH_MS`: обрыв базы после старта не ломает ответы. Пока каталога нет — 503.
+- Решение: `matched` при уверенности лидера ≥ 0.8, иначе `ambiguous` с тремя альтернативами;
+  `not_found`, если сходство лучшего референса < 0.4: `unreadable`, когда OCR прочитал не
+  больше 3 букв (переснять), иначе `not_in_catalog`. Обоснование порогов — в
+  `modelRecognizer.ts` и `docs/RECOGNIZER.md`; переопределяются переменными `MODEL_*`.
+- Слаги, которых нет в каталоге сайта (модель обучена на выгрузке, где их больше), в ответ
+  не попадают.
+- Сервис распознавания поднимается, перезапускает воркер или занят → `503 RECOGNIZER_UNAVAILABLE`.
+
+Новая реализация — тип `Recognizer` (`api/src/recognizer/recognizer.ts`) + ветка в
+`createRecognizer` (`api/src/server.ts`) + значение `RECOGNIZER` (`api/src/config.ts`).
 Контракт и клиенты при этом не меняются. Ответ распознавателя API ещё раз проверяет схемой:
 кривой ответ станет `500 INTERNAL_ERROR` с записью `recognizer_contract_violation` в логе
 и не дойдёт до клиентов. Зависший распознаватель прерывается через `RECOGNIZE_TIMEOUT_MS`

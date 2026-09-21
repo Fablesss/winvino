@@ -14,4 +14,18 @@ describe('loadApiConfig', () => {
     expect(() => loadApiConfig({ PORT: 'eighty' })).toThrow(ApiConfigError);
     expect(() => loadApiConfig({ RECOGNIZER: 'paddle' })).toThrow(/RECOGNIZER/);
   });
+
+  it('requiresModelServiceAndDatabaseForModelRecognizer', () => {
+    expect(() => loadApiConfig({ RECOGNIZER: 'model' })).toThrow(/RECOGNIZER_URL[\s\S]*DATABASE_URL/);
+    expect(loadApiConfig({}).model).toBeNull();
+  });
+
+  it('readsModelThresholdsWithMetricBackedDefaults', () => {
+    const env = { RECOGNIZER: 'model', RECOGNIZER_URL: 'http://recognizer:8080', DATABASE_URL: 'postgres://u:p@db/winvino' };
+    expect(loadApiConfig(env).model).toMatchObject({
+      url: 'http://recognizer:8080',
+      thresholds: { matchedMinConfidence: 0.8, notInCatalogMaxVisual: 0.4, unreadableMaxOcrLetters: 3, maxAlternatives: 3 },
+    });
+    expect(loadApiConfig({ ...env, MODEL_MATCHED_MIN_CONFIDENCE: '0.9' }).model?.thresholds.matchedMinConfidence).toBe(0.9);
+  });
 });

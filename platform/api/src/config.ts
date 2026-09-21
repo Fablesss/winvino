@@ -1,26 +1,54 @@
 import { z } from 'zod';
+import { DEFAULT_MODEL_THRESHOLDS, type ModelThresholds } from './recognizer/modelRecognizer.ts';
 
 /** Единственное место, где API читает окружение. Дальше конфиг передаётся явно. */
-const ApiEnvSchema = z.object({
-  HOST: z.string().min(1).default('127.0.0.1'),
-  PORT: z.coerce.number().int().min(1).max(65535).default(8787),
-  /** Через запятую или `*`. Нативным клиентам и боту CORS не нужен — только браузерам с чужого origin. */
-  CORS_ORIGINS: z.string().default('*'),
-  RECOGNIZER: z.enum(['mock']).default('mock'),
-  RECOGNIZE_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
-  /** Искусственная задержка мока — чтобы клиенты видели состояние загрузки как с моделью. */
-  MOCK_RECOGNIZER_DELAY_MS: z.coerce.number().int().nonnegative().default(700),
-  ACCESS_LOG: z.enum(['on', 'off']).default('on'),
-});
+const ApiEnvSchema = z
+  .object({
+    HOST: z.string().min(1).default('127.0.0.1'),
+    PORT: z.coerce.number().int().min(1).max(65535).default(8787),
+    /** Через запятую или `*`. Нативным клиентам и боту CORS не нужен — только браузерам с чужого origin. */
+    CORS_ORIGINS: z.string().default('*'),
+    RECOGNIZER: z.enum(['mock', 'model']).default('mock'),
+    RECOGNIZE_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+    /** Искусственная задержка мока — чтобы клиенты видели состояние загрузки как с моделью. */
+    MOCK_RECOGNIZER_DELAY_MS: z.coerce.number().int().nonnegative().default(700),
+    ACCESS_LOG: z.enum(['on', 'off']).default('on'),
+
+    // ── RECOGNIZER=model ──
+    /** Сервис распознавания (scripts/serve-recognizer.mjs), например http://recognizer:8080. */
+    RECOGNIZER_URL: z.url().optional(),
+    /** Postgres с каталогом вин: карточки вин для ответа берутся оттуда. */
+    DATABASE_URL: z.string().min(1).optional(),
+    CATALOG_REFRESH_MS: z.coerce.number().int().positive().default(10 * 60_000),
+    MODEL_MATCHED_MIN_CONFIDENCE: z.coerce.number().min(0).max(1).default(DEFAULT_MODEL_THRESHOLDS.matchedMinConfidence),
+    MODEL_NOT_IN_CATALOG_MAX_VISUAL: z.coerce.number().min(-1).max(1).default(DEFAULT_MODEL_THRESHOLDS.notInCatalogMaxVisual),
+    MODEL_UNREADABLE_MAX_OCR_LETTERS: z.coerce.number().int().nonnegative().default(DEFAULT_MODEL_THRESHOLDS.unreadableMaxOcrLetters),
+    MODEL_MAX_ALTERNATIVES: z.coerce.number().int().nonnegative().default(DEFAULT_MODEL_THRESHOLDS.maxAlternatives),
+  })
+  .superRefine((vars, ctx) => {
+    if (vars.RECOGNIZER !== 'model') return;
+    for (const key of ['RECOGNIZER_URL', 'DATABASE_URL'] as const) {
+      if (!vars[key]) ctx.addIssue({ code: 'custom', path: [key], message: 'обязательна при RECOGNIZER=model' });
+    }
+  });
+
+export type ModelRecognizerConfig = {
+  url: string;
+  databaseUrl: string;
+  catalogRefreshMs: number;
+  thresholds: ModelThresholds;
+};
 
 export type ApiConfig = {
   host: string;
   port: number;
   corsOrigins: '*' | string[];
-  recognizer: 'mock';
+  recognizer: 'mock' | 'model';
   recognizeTimeoutMs: number;
   mockRecognizerDelayMs: number;
   isAccessLogEnabled: boolean;
+  /** Заполнено только при RECOGNIZER=model. */
+  model: ModelRecognizerConfig | null;
 };
 
 export class ApiConfigError extends Error {
@@ -39,6 +67,19 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
   const corsOrigins = vars.CORS_ORIGINS.trim() === '*'
     ? '*'
     : vars.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+  const model = vars.RECOGNIZER === 'model' && vars.RECOGNIZER_URL && vars.DATABASE_URL
+    ? {
+      url: vars.RECOGNIZER_URL,
+      databaseUrl: vars.DATABASE_URL,
+      catalogRefreshMs: vars.CATALOG_REFRESH_MS,
+      thresholds: {
+        matchedMinConfidence: vars.MODEL_MATCHED_MIN_CONFIDENCE,
+        notInCatalogMaxVisual: vars.MODEL_NOT_IN_CATALOG_MAX_VISUAL,
+        unreadableMaxOcrLetters: vars.MODEL_UNREADABLE_MAX_OCR_LETTERS,
+        maxAlternatives: vars.MODEL_MAX_ALTERNATIVES,
+      },
+    }
+    : null;
   return {
     host: vars.HOST,
     port: vars.PORT,
@@ -47,5 +88,6 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
     recognizeTimeoutMs: vars.RECOGNIZE_TIMEOUT_MS,
     mockRecognizerDelayMs: vars.MOCK_RECOGNIZER_DELAY_MS,
     isAccessLogEnabled: vars.ACCESS_LOG === 'on',
+    model,
   };
 }
