@@ -1,4 +1,4 @@
-# Контекст образов api и web — platform/. Зависимости ставятся в образе, сборка Next — тоже.
+# Контекст образов api, web и bot — platform/. Зависимости ставятся в образе, сборка Next — тоже.
 **/node_modules
 **/.next
 **/*.tsbuildinfo

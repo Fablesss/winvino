@@ -1,12 +1,13 @@
 # Деплой через Dokploy
 
-Три сервиса из `docker-compose.yml` в корне репозитория:
+Сервисы из `docker-compose.yml` в корне репозитория:
 
 | Сервис | Что это | Порт | Наружу |
 |---|---|---|---|
 | `recognizer` | распознавание по фото: Node + Python (torch — визуал, PaddleOCR — текст). `deploy/recognizer.Dockerfile` | 8080 | нет, только внутренняя сеть |
-| `api` | API для всех клиентов (`platform/api`), `RECOGNIZER=model`. `deploy/api.Dockerfile` | 8787 | по желанию — для бота и нативных приложений |
+| `api` | API для всех клиентов (`platform/api`), `RECOGNIZER=model`. `deploy/api.Dockerfile` | 8787 | по желанию — для нативных приложений и внешних клиентов |
 | `web` | Telegram Mini App + PWA (`platform/web`), `/api/*` проксирует в `api`. `deploy/web.Dockerfile` | 3000 | да |
+| `bot` | Telegram-бот (`platform/bot`), ходит в `api` по внутренней сети. Только с `COMPOSE_PROFILES=bot`. `deploy/bot.Dockerfile` | — | нет: long polling, в Telegram ходит сам |
 
 Postgres с каталогом — внешний, по `DATABASE_URL` (тот же, что у синхронизации каталога).
 
@@ -53,11 +54,16 @@ Fine-grained tokens, доступ только к `Fablesss/winvino`, права
    CORS_ORIGINS=*                 # origin браузерных клиентов с чужих доменов
    RECOGNIZE_TIMEOUT_MS=30000
    RECOGNIZER_MAX_IN_FLIGHT=4
+   # Telegram-бот (без этих строк compose его не поднимает):
+   COMPOSE_PROFILES=bot
+   TELEGRAM_BOT_TOKEN=<токен от @BotFather>
+   WEB_APP_URL=https://<домен веба>   # кнопка «Открыть сканер»; без неё — бот без кнопки
    ```
 
    Для базы с самоподписанным TLS — `?sslmode=no-verify` в конце `DATABASE_URL`.
 4. **Domains**: `web` → порт `3000`, HTTPS (Let's Encrypt). По желанию `api` → порт `8787` —
-   если бот или нативное приложение ходят в API напрямую, а не через веб. Traefik-метки
+   если нативное приложение или внешний клиент ходят в API напрямую, а не через веб. Боту домен
+   не нужен: он в той же compose-сети и ходит в `http://api:8787`. Traefik-метки
    Dokploy добавляет сам; сети `dokploy-network` у `web` и `api` уже прописаны в compose.
 5. **Deploy**. Первая сборка долгая (~10–20 мин): образ распознавателя тянет torch (CPU),
    PaddlePaddle и веса детектора и OCR — они запекаются в образ, в рантайме сервис в интернет
@@ -69,6 +75,11 @@ Fine-grained tokens, доступ только к `Fablesss/winvino`, права
 `распознаватель готов: siglip2-b16-ft1-e4, референсов 2096 …`.
 
 Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с HTTPS-адресом веба.
+
+Бот: лог `bot` начинается с `{"event":"bot_started","username":"…"}`; фото в чат с ботом →
+карточка вина. Токен бота — один на процесс: пока бот крутится на сервере, локально с тем же
+токеном его не запускайте (оба получат 409 Conflict). Если у бота когда-то был настроен webhook,
+снимите его (`https://api.telegram.org/bot<токен>/deleteWebhook`) — иначе long polling тоже 409.
 
 ## 3. Обновления
 
@@ -83,7 +94,7 @@ Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с H
 - `recognizer`: ~2.5 ГБ RAM (две модели в двух процессах), чем больше ядер — тем быстрее.
   Замер на CPU i5-4440 (4 ядра, 2013 г.): визуал ~3 с + OCR ~2 с на фото. Кадры
   обрабатываются по одному; сверх `RECOGNIZER_MAX_IN_FLIGHT` в очереди — 503.
-- `api` и `web` — по ~100–200 МБ.
+- `api`, `web` и `bot` — по ~100–200 МБ.
 - Образ распознавателя — по оценке ~3 ГБ (не собирался, см. ниже). Том с артефактами —
   ~0.4 ГБ (архив после распаковки удаляется; пик во время загрузки ~0.75 ГБ).
 
@@ -93,7 +104,9 @@ Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с H
   перезапуска распознаватель отвечает 503, API — `RECOGNIZER_UNAVAILABLE`.
 - Каталог вин API держит в памяти и обновляет раз в 10 минут: короткий обрыв базы после
   старта ответы не ломает. Без базы при старте распознавание отвечает 503, пока база не появится.
-- Healthcheck есть у всех трёх контейнеров; `restart: unless-stopped`.
+- Healthcheck есть у `recognizer`, `api` и `web`; у `bot` его нет (нет HTTP) — упавший процесс
+  поднимает `restart: unless-stopped`, как и остальные. Сбои связи с Telegram бот переживает сам:
+  повторяет `getUpdates` с паузой 1 → 30 с. Отозванный токен — выход с ошибкой в логе.
 
 ## 6. Контракт организатора
 
@@ -119,6 +132,8 @@ docker compose up --build
 - «образы» api и web собраны во временных папках ровно по спискам `COPY` из Dockerfile, с теми
   же `npm ci` (флаги workspace, `--omit=dev`) и standalone-сборкой Next; запущены и прогнан
   путь «веб → /api-прокси → API → распознаватель → база»;
+- «образ» бота — так же по спискам `COPY` и с `npm ci --omit=dev`; прогнан против API на моке и
+  заглушки Bot API (фото, /start, большой файл, группа). С настоящим Telegram не проверялся;
 - «образ» распознавателя — те же файлы, запуск из распакованного бандла с `HF_HUB_OFFLINE=1`,
   прогон `participant_test.sh`;
 - скачивание бандла из приватного релиза по токену и сверка sha256 — тем же `curl` и

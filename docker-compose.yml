@@ -1,14 +1,15 @@
 # Деплой в Dokploy: сервис типа Compose, путь к файлу — docker-compose.yml. Подробно — docs/DEPLOY.md.
 #
 # Домены назначаются в UI Dokploy (Domains): web → порт 3000, при необходимости api → 8787
-# (для бота и нативных клиентов). Traefik-метки Dokploy добавляет сам. Распознаватель наружу
-# не выставляется — только внутренняя сеть.
+# (для нативных клиентов; боту не нужно — он во внутренней сети). Traefik-метки Dokploy добавляет
+# сам. Распознаватель наружу не выставляется — только внутренняя сеть.
 #
 # Переменные (Dokploy → Environment пишет их в .env рядом с этим файлом):
 #   DATABASE_URL      Postgres с каталогом вин (обязательно)
 #   ARTIFACTS_URL     бандл артефактов модели (обязательно), ARTIFACTS_SHA256 — его sha256
 #   ARTIFACTS_TOKEN   токен чтения репозитория, если бандл в приватном релизе GitHub
 #   CORS_ORIGINS      origin браузерных клиентов с чужих доменов; веб ходит через свой /api
+#   COMPOSE_PROFILES=bot  включает Telegram-бота; тогда нужен TELEGRAM_BOT_TOKEN, по желанию WEB_APP_URL
 services:
   recognizer:
     build:
@@ -62,6 +63,24 @@ services:
     networks:
       - internal
       - dokploy-network
+
+  # Включается профилем: без COMPOSE_PROFILES=bot деплой идёт как раньше, без бота и его токена.
+  # Long polling — порт и домен не нужны; в Telegram бот ходит сам.
+  bot:
+    profiles: [bot]
+    build:
+      context: platform
+      dockerfile: ../deploy/bot.Dockerfile
+    restart: unless-stopped
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      WINVINO_API_URL: http://api:8787
+      # HTTPS-адрес веба для кнопки Mini App; пусто — бот без кнопки
+      WEB_APP_URL: ${WEB_APP_URL:-}
+    depends_on:
+      - api
+    networks:
+      - internal
 
 volumes:
   recognizer-data:
