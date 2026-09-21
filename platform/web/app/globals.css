@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/*
+ * Своя палитра — для PWA и браузера. Внутри Telegram (html[data-telegram]) фон, текст и
+ * кнопки берутся из темы клиента: telegram-web-app.js сам выставляет --tg-theme-*.
+ * --paper и --ruby синхронны с app/brand.ts.
+ */
+:root {
+  --paper: #f1f3ef;
+  --surface: #ffffff;
+  --ink: #1f2b25;
+  --hint: #66706a;
+  --line: #d8ddd6;
+  --action: #8a1c3b;
+  --action-ink: #ffffff;
+  --link: #8a1c3b;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151d19;
+    --surface: #1c2621;
+    --ink: #e7ebe7;
+    --hint: #98a29c;
+    --line: #2c3731;
+    --action: #c24a68;
+    --action-ink: #ffffff;
+    --link: #e27d96;
+    color-scheme: dark;
+  }
+}
+
+html[data-telegram] {
+  --paper: var(--tg-theme-bg-color, #ffffff);
+  --surface: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  --ink: var(--tg-theme-text-color, #000000);
+  --hint: var(--tg-theme-hint-color, #999999);
+  --line: var(--tg-theme-section-separator-color, rgb(128 128 128 / 0.25));
+  --action: var(--tg-theme-button-color, #2481cc);
+  --action-ink: var(--tg-theme-button-text-color, #ffffff);
+  --link: var(--tg-theme-link-color, #2481cc);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-hint: var(--hint);
+  --color-line: var(--line);
+  --color-action: var(--action);
+  --color-action-ink: var(--action-ink);
+  --color-link: var(--link);
+  --font-sans: var(--font-onest), system-ui, sans-serif;
+  --font-label: var(--font-prata), Georgia, serif;
+}
+
+/* Цвет самого вина — поле, на котором стоит бутылка. Не зависит от темы: вино одного цвета везде. */
+.wine-swatch-white { background-color: #e6d890; }
+.wine-swatch-red { background-color: #7a1e33; }
+.wine-swatch-rose { background-color: #eca79c; }
+.wine-swatch-orange { background-color: #d4843a; }
+.wine-swatch-unknown { background-color: var(--line); }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Полоса считывания поверх снимка, пока идёт распознавание. Единственная фоновая анимация. */
+@keyframes label-scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+.label-scan-beam {
+  animation: label-scan 1.6s ease-in-out infinite alternate;
+  background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--paper) 55%, transparent) 50%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label-scan-beam { animation: none; opacity: 0.5; }
+}

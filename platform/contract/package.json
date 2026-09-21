@@ -1,0 +1,23 @@
+{
+  "name": "@winvino/contract",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Контракт API v1: zod-схемы, коды ошибок, OpenAPI, типизированный fetch-клиент",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "openapi:write": "node scripts/write-openapi.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.1"
+  }
+}

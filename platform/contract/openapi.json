@@ -1,0 +1,647 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "winvino API",
+    "version": "1.0.0",
+    "description": "Распознавание российского вина по фото этикетки. Один контракт для Telegram Mini App,\nTelegram-бота, PWA и нативных приложений.\n\nОшибки приходят в едином формате `ApiError`. Незнакомый клиенту `code` обрабатывается\nкак общая ошибка по HTTP-статусу — новые коды добавляются без смены версии."
+  },
+  "paths": {
+    "/v1/recognitions": {
+      "post": {
+        "operationId": "recognizeLabel",
+        "summary": "Распознать вино по фото этикетки",
+        "description": "Фото — поле `image` в multipart/form-data.\nФорматы: image/jpeg, image/png, image/webp (по сигнатуре файла; HEIC — конвертировать в JPEG).\nДо 10 МБ, короткая сторона не меньше 200px.\nРекомендуется ужать до 1600px по длинной стороне.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "image"
+                ],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "image": {
+                  "contentType": "image/jpeg, image/png, image/webp"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Распознавание выполнено. «Не нашли» — тоже 200, со status = not_found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recognition"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Коды: INVALID_REQUEST, IMAGE_REQUIRED",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Коды: IMAGE_TOO_LARGE",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Коды: UNSUPPORTED_IMAGE_TYPE",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Коды: IMAGE_UNREADABLE, IMAGE_TOO_SMALL",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Коды: INTERNAL_ERROR",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Коды: RECOGNIZER_UNAVAILABLE",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Проверка живости",
+        "responses": {
+          "200": {
+            "description": "Сервис жив",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/openapi.json": {
+      "get": {
+        "operationId": "getOpenApiDocument",
+        "summary": "Этот документ",
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.1",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiErrorCode": {
+        "type": "string",
+        "enum": [
+          "INVALID_REQUEST",
+          "IMAGE_REQUIRED",
+          "NOT_FOUND",
+          "IMAGE_TOO_LARGE",
+          "UNSUPPORTED_IMAGE_TYPE",
+          "IMAGE_UNREADABLE",
+          "IMAGE_TOO_SMALL",
+          "INTERNAL_ERROR",
+          "RECOGNIZER_UNAVAILABLE"
+        ]
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "$ref": "#/components/schemas/ApiErrorCode"
+              },
+              "message": {
+                "type": "string",
+                "description": "По-русски, можно показать пользователю"
+              },
+              "requestId": {
+                "description": "Совпадает с заголовком X-Request-Id",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "details": {
+                "description": "Машиночитаемые подробности, например лимит",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "WineColor": {
+        "type": "string",
+        "enum": [
+          "white",
+          "red",
+          "rose",
+          "orange"
+        ],
+        "description": "Цвет вина"
+      },
+      "WineSweetness": {
+        "type": "string",
+        "enum": [
+          "dry",
+          "semi_dry",
+          "semi_sweet",
+          "sweet",
+          "brut",
+          "extra_brut"
+        ],
+        "description": "Содержание сахара"
+      },
+      "Wine": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Стабильный id вина в каталоге winvino"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Слаг вина в каталоге-источнике (vino-svoe.ru)"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Название, как в каталоге"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Винодельня"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "color": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WineColor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sweetness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WineSweetness"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categoryLabel": {
+            "description": "Готовая подпись для показа: «Белое полусухое»",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hue": {
+            "description": "Описание оттенка: «Соломенный с золотистыми бликами»",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grapes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Сорта винограда"
+          },
+          "pairings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Гастрономические сочетания"
+          },
+          "alcoholPercent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "servingTemperatureC": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "min",
+                  "max"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Температура подачи, °C"
+          },
+          "vintage": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Год урожая; у большинства вин каталога не указан"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Рейтинг каталога, 0–5"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Фото бутылки из каталога"
+          },
+          "catalogUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Карточка вина на сайте каталога"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "manufacturer",
+          "region",
+          "color",
+          "sweetness",
+          "categoryLabel",
+          "hue",
+          "grapes",
+          "pairings",
+          "alcoholPercent",
+          "servingTemperatureC",
+          "vintage",
+          "rating",
+          "description",
+          "imageUrl",
+          "catalogUrl"
+        ]
+      },
+      "WineCandidate": {
+        "type": "object",
+        "properties": {
+          "wine": {
+            "$ref": "#/components/schemas/Wine"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Уверенность, 0–1"
+          }
+        },
+        "required": [
+          "wine",
+          "confidence"
+        ]
+      },
+      "NotFoundReason": {
+        "type": "string",
+        "enum": [
+          "unreadable",
+          "not_in_catalog"
+        ],
+        "description": "unreadable — этикетку не удалось прочитать, стоит переснять; not_in_catalog — вина нет в каталоге"
+      },
+      "Recognition": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "matched",
+                  "ambiguous"
+                ],
+                "description": "matched — уверенное совпадение; ambiguous — лучшая догадка, стоит показать альтернативы"
+              },
+              "reason": {
+                "type": "null"
+              },
+              "match": {
+                "$ref": "#/components/schemas/WineCandidate"
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WineCandidate"
+                },
+                "description": "Другие кандидаты по убыванию уверенности"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "Id распознавания — для логов и обращений в поддержку"
+              },
+              "processingMs": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "status",
+              "reason",
+              "match",
+              "alternatives",
+              "id",
+              "processingMs",
+              "createdAt"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "not_found"
+              },
+              "reason": {
+                "$ref": "#/components/schemas/NotFoundReason"
+              },
+              "match": {
+                "type": "null"
+              },
+              "alternatives": {
+                "maxItems": 0,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/WineCandidate"
+                }
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "Id распознавания — для логов и обращений в поддержку"
+              },
+              "processingMs": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "status",
+              "reason",
+              "match",
+              "alternatives",
+              "id",
+              "processingMs",
+              "createdAt"
+            ]
+          }
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok"
+          },
+          "apiVersion": {
+            "type": "string",
+            "const": "v1"
+          },
+          "recognizer": {
+            "type": "string",
+            "description": "Какой распознаватель отвечает: mock — заглушка, пока нет модели"
+          }
+        },
+        "required": [
+          "status",
+          "apiVersion",
+          "recognizer"
+        ]
+      }
+    },
+    "headers": {
+      "RequestId": {
+        "description": "Id запроса для логов и поддержки",
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

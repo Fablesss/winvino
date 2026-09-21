@@ -1,0 +1,25 @@
+{
+  "name": "winvino-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Клиентская платформа сканера этикеток: единое API распознавания + веб (Telegram Mini App и PWA)",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "contract",
+    "api",
+    "web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @winvino/api",
+    "dev:web": "npm run dev -w @winvino/web",
+    "build": "npm run build -w @winvino/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "openapi:write": "npm run openapi:write -w @winvino/contract"
+  }
+}
