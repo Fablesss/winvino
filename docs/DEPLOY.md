@@ -134,5 +134,11 @@ PaddleOCR и torch на Linux-CPU сервера.
 | | |
 |---|---|
 | Тег | `siglip2-b16-ft1-e4` |
+| Релиз | https://github.com/Fablesss/winvino/releases/tag/model-siglip2-b16-ft1-e4 |
 | Архив | `winvino-recognizer-siglip2-b16-ft1-e4.tar.gz`, 340.8 МБ |
-| sha256 | `5d341c7d9a482c8f038ed8f2178501f194e1716fce267486e676a42fecf32016` |
+| `ARTIFACTS_URL` | `https://api.github.com/repos/Fablesss/winvino/releases/assets/579159331` |
+| `ARTIFACTS_SHA256` | `5d341c7d9a482c8f038ed8f2178501f194e1716fce267486e676a42fecf32016` |
+
+Проверено 21.09.2026 тем же `deploy/recognizer-entrypoint.sh` (Git Bash): по токену — 81 с на
+скачивание, sha256 совпал, раскладка тома верная; повторный старт берёт бандл из тома без
+скачивания; без токена приватный релиз отвечает 404 и контейнер падает с понятной ошибкой.
