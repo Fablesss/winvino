@@ -1,0 +1,10 @@
+{
+ "tag": "siglip2-b16-ft1-e4",
+ "created": "2026-09-21T13:04:22Z",
+ "files": {
+  "dataset/catalog.jsonl": "f0cba04220cac5f787a896c933aecd0657eae154140ce699efc7489aad4d0817",
+  "model/recognizer.json": "17a8eb4f1d419d7a0fab0446512a819f54e01b09a5666072d95bb3ac92e21dc9",
+  "model/checkpoints/ft1-best.pt": "6cf5770e26baf55d1d68e8be6b765d9a30206cd3c6a242bcfc34e1a61101de2a",
+  "model/index/siglip2-b16-ft1-e4-d150d3724f.npz": "04d691df35fb6c702797e65f8949ba942668e495114918e23044666fcd8a0dbf"
+ }
+}

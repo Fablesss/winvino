@@ -13,30 +13,33 @@ Postgres с каталогом — внешний, по `DATABASE_URL` (тот �
 
 ## 1. Артефакты модели
 
-Веса, индекс и каталог (~340 МБ) в git и в образ не входят. Контейнер `recognizer` при старте
-качает бандл по `ARTIFACTS_URL`, сверяет sha256 и кладёт в именованный том `recognizer-data`.
-При следующих стартах берёт из тома, пока не сменится `ARTIFACTS_SHA256`.
+Веса, индекс и каталог (~355 МБ) лежат в самом репозитории — `artifacts/` — и запекаются в образ
+распознавателя при сборке. В рантайме он их не качает: ни внешних адресов, ни токенов для деплоя
+не нужно. Чекпойнт разрезан на части по 90 МиБ, потому что GitHub не принимает файлы больше
+100 МиБ; стадия `artifacts` в `deploy/recognizer.Dockerfile` склеивает их обратно и сверяет
+sha256 по `artifacts/bundle.sha256sums` — битая склейка валит сборку, а не рантайм.
 
-Собрать бандл (на машине, где обучалась модель):
+Что внутри (раскладка та же, что у `WINVINO_DATA_DIR`): `model/checkpoints/<чекпойнт>.pt` —
+визуальная башня SigLIP2 целиком, `model/index/<тег>-<ключ>.npz` — эмбеддинги референсов,
+`model/recognizer.json` — чекпойнт и веса слияния, `dataset/catalog.jsonl` — каталог для
+OCR-матчера, `bundle.json` — тег, дата и sha256 каждого файла.
+
+Выложить новую модель после обучения:
 
 ```
-npm run bundle:export
-# → data/raw/deploy/winvino-recognizer-<тег>.tar.gz и .sha256 рядом
+npm run bundle:export   # → data/raw/deploy/winvino-recognizer-<тег>.tar.gz и bundle.json
+npm run bundle:repo     # → artifacts/: файлы бандла, чекпойнт частями, bundle.sha256sums
+git add -A artifacts && git commit -m "модель <тег>" && git push
 ```
 
-Опубликовать в релиз приватного репозитория:
+`bundle:repo` сверяет sha256 исходных файлов с манифестом (чекпойнт, переписанный после экспорта,
+в репозиторий не уедет) и сносит прежнюю раскладку целиком — от старого тега в `artifacts/`
+ничего не остаётся. Цена: каждая версия модели ~355 МБ в истории git навсегда, на столько же
+растёт клон. Убрать из истории можно только её перезаписью.
 
-```
-gh release create model-<тег> data/raw/deploy/winvino-recognizer-<тег>.tar.gz --repo Fablesss/winvino --title "Модель <тег>" --notes "sha256: <значение из .sha256>"
-gh api repos/Fablesss/winvino/releases/tags/model-<тег> --jq ".assets[0].url"
-# → https://api.github.com/repos/Fablesss/winvino/releases/assets/<id>  — это ARTIFACTS_URL
-```
+Модель можно подменить и без пересборки — бандлом по адресу, см. раздел 8.
 
-Для скачивания из приватного релиза нужен токен: GitHub → Settings → Developer settings →
-Fine-grained tokens, доступ только к `Fablesss/winvino`, права `Contents: Read-only`. Это
-`ARTIFACTS_TOKEN`. Личный токен с правом записи на сервер не кладите.
-
-Текущий бандл: см. раздел «Текущий релиз модели» в конце.
+Какая модель лежит сейчас: см. «Текущая модель» в конце.
 
 ## 2. Сервис в Dokploy
 
@@ -47,9 +50,6 @@ Fine-grained tokens, доступ только к `Fablesss/winvino`, права
 
    ```
    DATABASE_URL=postgresql://user:password@host:5432/winvino
-   ARTIFACTS_URL=https://api.github.com/repos/Fablesss/winvino/releases/assets/<id>
-   ARTIFACTS_SHA256=<sha256 бандла>
-   ARTIFACTS_TOKEN=<fine-grained токен, Contents: Read-only>
    # по желанию:
    CORS_ORIGINS=*                 # origin браузерных клиентов с чужих доменов
    RECOGNIZE_TIMEOUT_MS=30000
@@ -66,12 +66,13 @@ Fine-grained tokens, доступ только к `Fablesss/winvino`, права
    не нужен: он в той же compose-сети и ходит в `http://api:8787`. Traefik-метки
    Dokploy добавляет сам; сети `dokploy-network` у `web` и `api` уже прописаны в compose.
 5. **Deploy**. Первая сборка долгая (~10–20 мин): образ распознавателя тянет torch (CPU),
-   PaddlePaddle и веса детектора и OCR — они запекаются в образ, в рантайме сервис в интернет
-   не ходит. Первый старт `recognizer` качает бандл и грузит модели; пока не готов, его
-   `/health` отвечает 503, а API на распознавание — `503 RECOGNIZER_UNAVAILABLE`.
+   PaddlePaddle, веса детектора и OCR и артефакты модели из `artifacts/` — всё запекается в
+   образ, в рантайме сервис в интернет не ходит. На старте `recognizer` поднимает две модели на
+   CPU; пока не готов, его `/health` отвечает 503, а API на распознавание —
+   `503 RECOGNIZER_UNAVAILABLE`.
 
 Проверка: открыть домен веба и отсканировать бутылку; `https://<домен api>/v1/health` →
-`{"status":"ok","recognizer":"model"}`. Логи распознавателя: `артефакты: …`, затем
+`{"status":"ok","recognizer":"model"}`. Лог распознавателя:
 `распознаватель готов: siglip2-b16-ft1-e4, референсов 2096 …`.
 
 Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с HTTPS-адресом веба.
@@ -84,8 +85,9 @@ Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с H
 ## 3. Обновления
 
 - **Код**: пуш в `master` → Deploy (или автодеплой по webhook в Dokploy).
-- **Модель**: новый бандл → новый релиз → сменить `ARTIFACTS_URL` и `ARTIFACTS_SHA256` →
-  Deploy. Распознаватель скачает новый бандл поверх старого в томе.
+- **Модель**: `npm run bundle:export && npm run bundle:repo` → коммит `artifacts/` → пуш →
+  Deploy. Образ распознавателя пересобирается (слои с torch и PaddleOCR берутся из кеша, если
+  lock-файлы не менялись), модель меняется вместе с кодом и в одном коммите с ним.
 - **Адрес API для веба** зашит при сборке (`WINVINO_API_URL=http://api:8787` в compose). Внутри
   compose менять его не нужно.
 
@@ -95,8 +97,8 @@ Telegram Mini App: в @BotFather — `/newapp` или кнопка меню с H
   Замер на CPU i5-4440 (4 ядра, 2013 г.): визуал ~3 с + OCR ~2 с на фото. Кадры
   обрабатываются по одному; сверх `RECOGNIZER_MAX_IN_FLIGHT` в очереди — 503.
 - `api`, `web` и `bot` — по ~100–200 МБ.
-- Образ распознавателя — по оценке ~3 ГБ (не собирался, см. ниже). Том с артефактами —
-  ~0.4 ГБ (архив после распаковки удаляется; пик во время загрузки ~0.75 ГБ).
+- Образ распознавателя — по оценке ~3.4 ГБ вместе с артефактами (не собирался, см. ниже). Томов
+  у сервисов нет: всё состояние — в базе. Клон репозитория на сборщике — ~0.4 ГБ.
 
 ## 5. Надёжность
 
@@ -124,6 +126,26 @@ docker compose up --build
 # веб — через docker compose port или временный ports: в compose
 ```
 
+## 8. Бандл по адресу вместо репозитория
+
+Путь на случай, когда модель нужно подменить без пересборки образа (или когда 355 МБ в git
+перестанут устраивать). Задайте распознавателю `ARTIFACTS_URL` и `ARTIFACTS_SHA256` — entrypoint
+скачает архив, сверит sha256 и распакует поверх запечённых артефактов. Тома у сервиса нет, поэтому
+скачивание повторяется при каждом рестарте контейнера; для постоянной работы лучше положить модель
+в `artifacts/` и пересобрать.
+
+Опубликовать бандл в релиз приватного репозитория:
+
+```
+gh release create model-<тег> data/raw/deploy/winvino-recognizer-<тег>.tar.gz --repo Fablesss/winvino --title "Модель <тег>" --notes "sha256: <значение из .sha256>"
+gh api repos/Fablesss/winvino/releases/tags/model-<тег> --jq ".assets[0].url"
+# → https://api.github.com/repos/Fablesss/winvino/releases/assets/<id>  — это ARTIFACTS_URL
+```
+
+Для скачивания из приватного релиза нужен токен: GitHub → Settings → Developer settings →
+Fine-grained tokens, доступ только к `Fablesss/winvino`, права `Contents: Read-only`. Это
+`ARTIFACTS_TOKEN`. Личный токен с правом записи на сервер не кладите.
+
 ## Что проверено и что нет
 
 На машине разработки нет Docker, поэтому **образы ни разу не собирались** — первая настоящая
@@ -137,23 +159,36 @@ docker compose up --build
 - «образ» распознавателя — те же файлы, запуск из распакованного бандла с `HF_HUB_OFFLINE=1`,
   прогон `participant_test.sh`;
 - скачивание бандла из приватного релиза по токену и сверка sha256 — тем же `curl` и
-  `sha256sum`, что в entrypoint.
+  `sha256sum`, что в entrypoint;
+- раскладка `artifacts/` и склейка частей — теми же командами, что в стадии `artifacts`
+  (`cat *.part*`, `sha256sum -c bundle.sha256sums`): все четыре файла OK, чекпойнт побайтово
+  совпал с исходным (371 787 235 Б). Распознаватель поднят с `WINVINO_DATA_DIR` на склеенной
+  копии: `распознаватель готов: siglip2-b16-ft1-e4, референсов 2096`, `/health` → ready, реальное
+  фото → верный слаг с уверенностью 0.92.
 
 Не проверено и может потребовать правок на первой сборке: установка Linux-колёс из
 lock-файлов (снимались с Windows-окружений; особенно `paddlepaddle==3.2.0` и
 `opencv-contrib-python` под Python 3.12), загрузка весов PaddleOCR при сборке образа, работа
 PaddleOCR и torch на Linux-CPU сервера.
 
-## Текущий релиз модели
+## Текущая модель
 
 | | |
 |---|---|
 | Тег | `siglip2-b16-ft1-e4` |
+| В репозитории | `artifacts/` — 4 файла бандла, 355 МБ; чекпойнт `ft1-best.pt` четырьмя частями по 90 МиБ |
+| Чекпойнт | `model/checkpoints/ft1-best.pt`, sha256 `6cf5770e26baf55d1d68e8be6b765d9a30206cd3c6a242bcfc34e1a61101de2a` |
+| Индекс | `model/index/siglip2-b16-ft1-e4-d150d3724f.npz`, 2096 референсов |
+
+Тот же бандл лежит в релизе как резервный путь (раздел 8):
+
+| | |
+|---|---|
 | Релиз | https://github.com/Fablesss/winvino/releases/tag/model-siglip2-b16-ft1-e4 |
 | Архив | `winvino-recognizer-siglip2-b16-ft1-e4.tar.gz`, 340.8 МБ |
 | `ARTIFACTS_URL` | `https://api.github.com/repos/Fablesss/winvino/releases/assets/579159331` |
 | `ARTIFACTS_SHA256` | `5d341c7d9a482c8f038ed8f2178501f194e1716fce267486e676a42fecf32016` |
 
 Проверено 21.09.2026 тем же `deploy/recognizer-entrypoint.sh` (Git Bash): по токену — 81 с на
-скачивание, sha256 совпал, раскладка тома верная; повторный старт берёт бандл из тома без
-скачивания; без токена приватный релиз отвечает 404 и контейнер падает с понятной ошибкой.
+скачивание, sha256 совпал, раскладка верная; без токена приватный релиз отвечает 404 и контейнер
+падает с понятной ошибкой.

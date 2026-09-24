@@ -4,10 +4,11 @@
 # (для нативных клиентов; боту не нужно — он во внутренней сети). Traefik-метки Dokploy добавляет
 # сам. Распознаватель наружу не выставляется — только внутренняя сеть.
 #
+# Артефакты модели лежат в репозитории (artifacts/) и запекаются в образ распознавателя —
+# внешние адреса и токены для деплоя не нужны.
+#
 # Переменные (Dokploy → Environment пишет их в .env рядом с этим файлом):
 #   DATABASE_URL      Postgres с каталогом вин (обязательно)
-#   ARTIFACTS_URL     бандл артефактов модели (обязательно), ARTIFACTS_SHA256 — его sha256
-#   ARTIFACTS_TOKEN   токен чтения репозитория, если бандл в приватном релизе GitHub
 #   CORS_ORIGINS      origin браузерных клиентов с чужих доменов; веб ходит через свой /api
 #   COMPOSE_PROFILES=bot  включает Telegram-бота; тогда нужен TELEGRAM_BOT_TOKEN, по желанию WEB_APP_URL
 services:
@@ -17,14 +18,15 @@ services:
       dockerfile: deploy/recognizer.Dockerfile
     restart: unless-stopped
     environment:
-      ARTIFACTS_URL: ${ARTIFACTS_URL:?ARTIFACTS_URL не задан}
-      ARTIFACTS_SHA256: ${ARTIFACTS_SHA256:?ARTIFACTS_SHA256 не задан}
+      # Пусто — модель из образа. Заполнить, чтобы подменить её бандлом по адресу, без пересборки:
+      # тогда обязателен и ARTIFACTS_SHA256, а ARTIFACTS_TOKEN нужен для приватного релиза GitHub.
+      # Тома нет — подменённый бандл скачивается заново на каждый рестарт.
+      ARTIFACTS_URL: ${ARTIFACTS_URL:-}
+      ARTIFACTS_SHA256: ${ARTIFACTS_SHA256:-}
       ARTIFACTS_TOKEN: ${ARTIFACTS_TOKEN:-}
       RECOGNIZER_MAX_IN_FLIGHT: ${RECOGNIZER_MAX_IN_FLIGHT:-4}
       # Отказ «нет в каталоге» только для контракта организатора (/v1/eval/predict); API решает сам.
       EVAL_MIN_VISUAL: ${EVAL_MIN_VISUAL:-0}
-    volumes:
-      - recognizer-data:/data
     expose:
       - "8080"
     networks:
@@ -81,9 +83,6 @@ services:
       - api
     networks:
       - internal
-
-volumes:
-  recognizer-data:
 
 networks:
   internal:

@@ -1,4 +1,8 @@
 # Скрипты и Dockerfile исполняются в Linux-контейнерах: CRLF из Windows-чекаута ломает shebang.
+# Артефакты модели (scripts/bundle-to-repo.mjs) — байты как есть: перевод строк изменил бы
+# sha256 из bundle.json, а diff по весам и индексу бесполезен.
+artifacts/**  -text -diff
+
 *.sh          text eol=lf
 *.Dockerfile  text eol=lf
 Dockerfile    text eol=lf

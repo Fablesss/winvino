@@ -25,7 +25,8 @@
     "ml:train": ".venv-ml\\Scripts\\python.exe -u -m ml.train",
     "recognizer:eval": "node scripts/eval-recognizer.mjs",
     "serve:recognizer": "node scripts/serve-recognizer.mjs",
-    "bundle:export": ".venv-ml\\Scripts\\python.exe -m ml.export_bundle"
+    "bundle:export": ".venv-ml\\Scripts\\python.exe -m ml.export_bundle",
+    "bundle:repo": "node scripts/bundle-to-repo.mjs"
   },
   "dependencies": {
     "@sindresorhus/slugify": "1.1.0",

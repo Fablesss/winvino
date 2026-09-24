@@ -1,14 +1,24 @@
 # Сервис распознавания: Node-оркестратор (scripts/serve-recognizer.mjs) + два Python-окружения —
 # torch (визуал: детектор + SigLIP2) и PaddleOCR. Контекст сборки — корень репозитория.
 #
-# Артефакты модели (~340 МБ: чекпойнт, индекс, каталог) в образ НЕ входят: entrypoint качает
-# бандл по ARTIFACTS_URL в том /data и сверяет sha256. Веса моделей-зависимостей (детектор
-# torchvision, PaddleOCR) запекаются при сборке — в рантайме сервис в интернет не ходит.
+# Артефакты модели (~355 МБ: чекпойнт, индекс, каталог) лежат в репозитории в artifacts/ и
+# запекаются в /data при сборке. Веса моделей-зависимостей (детектор torchvision, PaddleOCR)
+# тоже запекаются — в рантайме сервис в интернет не ходит.
 
 FROM node:24-bookworm-slim AS node-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
+
+# Чекпойнт в git разрезан на части по 90 МиБ (лимит GitHub — 100 МиБ на файл,
+# scripts/bundle-to-repo.mjs). Склейка в отдельной стадии: в финальный образ уезжает только
+# собранный файл, без слоя с частями рядом.
+FROM node:24-bookworm-slim AS artifacts
+WORKDIR /artifacts
+COPY artifacts/ ./
+RUN set -eu; \
+    for first in $(find . -name '*.part00'); do target="${first%.part00}"; cat "$target".part* > "$target"; rm -f "$target".part*; done; \
+    sha256sum -c bundle.sha256sums
 
 FROM python:3.12-slim-bookworm
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -46,6 +56,7 @@ COPY scripts/lib/ scripts/lib/
 COPY deploy/recognizer-entrypoint.sh /usr/local/bin/recognizer-entrypoint
 # CRLF из Windows-чекаута сломал бы shebang — снимаем на всякий случай.
 RUN sed -i 's/\r$//' /usr/local/bin/recognizer-entrypoint && chmod +x /usr/local/bin/recognizer-entrypoint
+COPY --from=artifacts /artifacts /data
 
 ENV WINVINO_DATA_DIR=/data \
     ML_PYTHON=/opt/venv-ml/bin/python \
@@ -53,9 +64,8 @@ ENV WINVINO_DATA_DIR=/data \
     HF_HUB_OFFLINE=1 \
     HOST=0.0.0.0 \
     PORT=8080
-VOLUME /data
 EXPOSE 8080
-# Первый старт включает загрузку бандла и подъём моделей на CPU — отсюда длинный start-period.
+# Старт — подъём двух моделей на CPU (а с ARTIFACTS_URL ещё и загрузка бандла): длинный start-period.
 HEALTHCHECK --interval=20s --timeout=5s --start-period=900s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:${PORT}/health" > /dev/null || exit 1
 ENTRYPOINT ["recognizer-entrypoint"]
