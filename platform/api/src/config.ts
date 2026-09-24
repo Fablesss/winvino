@@ -24,11 +24,22 @@ const ApiEnvSchema = z
     MODEL_NOT_IN_CATALOG_MAX_VISUAL: z.coerce.number().min(-1).max(1).default(DEFAULT_MODEL_THRESHOLDS.notInCatalogMaxVisual),
     MODEL_UNREADABLE_MAX_OCR_LETTERS: z.coerce.number().int().nonnegative().default(DEFAULT_MODEL_THRESHOLDS.unreadableMaxOcrLetters),
     MODEL_MAX_ALTERNATIVES: z.coerce.number().int().nonnegative().default(DEFAULT_MODEL_THRESHOLDS.maxAlternatives),
+
+    // ── Архив прод-сканов ──
+    /** on — каждое распознавание сохраняется: фото на диск, строка в label_scans. Нужен DATABASE_URL. */
+    SCAN_ARCHIVE: z.enum(['on', 'off']).default('off'),
+    SCAN_ARCHIVE_DIR: z.string().min(1).default('./data/scans'),
+    /** Чем получено предсказание — версия релиза модели, например siglip2-b16-ft1-e4. */
+    MATCHER_VERSION: z.string().min(1).optional(),
   })
   .superRefine((vars, ctx) => {
-    if (vars.RECOGNIZER !== 'model') return;
-    for (const key of ['RECOGNIZER_URL', 'DATABASE_URL'] as const) {
-      if (!vars[key]) ctx.addIssue({ code: 'custom', path: [key], message: 'обязательна при RECOGNIZER=model' });
+    if (vars.RECOGNIZER === 'model') {
+      for (const key of ['RECOGNIZER_URL', 'DATABASE_URL'] as const) {
+        if (!vars[key]) ctx.addIssue({ code: 'custom', path: [key], message: 'обязательна при RECOGNIZER=model' });
+      }
+    }
+    if (vars.SCAN_ARCHIVE === 'on' && !vars.DATABASE_URL) {
+      ctx.addIssue({ code: 'custom', path: ['DATABASE_URL'], message: 'обязательна при SCAN_ARCHIVE=on' });
     }
   });
 
@@ -37,6 +48,13 @@ export type ModelRecognizerConfig = {
   databaseUrl: string;
   catalogRefreshMs: number;
   thresholds: ModelThresholds;
+};
+
+export type ScanArchiveConfig = {
+  dir: string;
+  databaseUrl: string;
+  /** null — версия не задана в окружении, подставится имя распознавателя. */
+  matcherVersion: string | null;
 };
 
 export type ApiConfig = {
@@ -49,6 +67,8 @@ export type ApiConfig = {
   isAccessLogEnabled: boolean;
   /** Заполнено только при RECOGNIZER=model. */
   model: ModelRecognizerConfig | null;
+  /** Заполнено только при SCAN_ARCHIVE=on. */
+  scanArchive: ScanArchiveConfig | null;
 };
 
 export class ApiConfigError extends Error {
@@ -80,6 +100,9 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
       },
     }
     : null;
+  const scanArchive = vars.SCAN_ARCHIVE === 'on' && vars.DATABASE_URL
+    ? { dir: vars.SCAN_ARCHIVE_DIR, databaseUrl: vars.DATABASE_URL, matcherVersion: vars.MATCHER_VERSION ?? null }
+    : null;
   return {
     host: vars.HOST,
     port: vars.PORT,
@@ -89,5 +112,6 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
     mockRecognizerDelayMs: vars.MOCK_RECOGNIZER_DELAY_MS,
     isAccessLogEnabled: vars.ACCESS_LOG === 'on',
     model,
+    scanArchive,
   };
 }

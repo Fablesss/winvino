@@ -28,4 +28,14 @@ describe('loadApiConfig', () => {
     });
     expect(loadApiConfig({ ...env, MODEL_MATCHED_MIN_CONFIDENCE: '0.9' }).model?.thresholds.matchedMinConfidence).toBe(0.9);
   });
+
+  it('keepsScanArchiveOffUntilAskedAndThenNeedsDatabase', () => {
+    expect(loadApiConfig({}).scanArchive).toBeNull();
+    expect(() => loadApiConfig({ SCAN_ARCHIVE: 'on' })).toThrow(/DATABASE_URL/);
+    expect(loadApiConfig({ SCAN_ARCHIVE: 'on', DATABASE_URL: 'postgres://u:p@db/winvino' }).scanArchive).toEqual({
+      dir: './data/scans',
+      databaseUrl: 'postgres://u:p@db/winvino',
+      matcherVersion: null,
+    });
+  });
 });

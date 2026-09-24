@@ -20,5 +20,9 @@ scripts/apply-*.mjs
 data/raw/
 *.log
 
+# фотографии прод-сканов: SCAN_ARCHIVE_DIR по умолчанию, относительно рабочего каталога API
+data/scans/
+platform/api/data/
+
 # модели tesseract.js — качаются сами при первом запуске, десятки мегабайт
 *.traineddata

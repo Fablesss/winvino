@@ -1,6 +1,7 @@
 import { RECOGNITION_IMAGE_FIELD, type Wine, type WineCandidate } from '@winvino/contract';
 import { z } from 'zod';
 import type { CatalogStore } from '../catalog/catalogStore.ts';
+import { IMAGE_EXTENSION } from '../image/inspectImage.ts';
 import { RecognizerUnavailableError, type RecognitionOutcome, type Recognizer } from './recognizer.ts';
 
 export const MODEL_RECOGNIZER_NAME = 'model';
@@ -77,8 +78,6 @@ export function decideOutcome(
   };
 }
 
-const FILE_EXTENSION = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as const;
-
 export function createModelRecognizer(options: {
   url: string;
   catalog: Pick<CatalogStore, 'get' | 'isLoaded'>;
@@ -94,7 +93,7 @@ export function createModelRecognizer(options: {
       if (!catalog.isLoaded()) throw new RecognizerUnavailableError('каталог вин ещё не загружен из базы');
 
       const form = new FormData();
-      form.append(RECOGNITION_IMAGE_FIELD, new Blob([image.bytes], { type: image.mimeType }), `label.${FILE_EXTENSION[image.mimeType]}`);
+      form.append(RECOGNITION_IMAGE_FIELD, new Blob([image.bytes], { type: image.mimeType }), `label.${IMAGE_EXTENSION[image.mimeType]}`);
       let response: Response;
       try {
         response = await fetchImpl(endpoint, { method: 'POST', body: form, signal });

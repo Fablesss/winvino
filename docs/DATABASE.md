@@ -95,6 +95,35 @@ ALTER TABLE wine_photos
 Сводка: `SELECT * FROM label_scan_accuracy;` — top-1, top-5 и false positives по версиям
 матчера, только по `source = 'eval_set'`.
 
+## Прод-сканы
+
+В ту же таблицу пишет API при `SCAN_ARCHIVE=on` — строка `source = 'production'` на каждый
+запрос `POST /v1/recognitions`:
+
+- `id` — тот же, что ушёл клиенту в ответе; по нему скан находят в логах и в админке;
+- `image_path` — путь внутри `SCAN_ARCHIVE_DIR`, имя файла = sha256 содержимого, поэтому
+  один кадр занимает место один раз, даже если его присылали десять раз;
+- `predicted_wine_slug`, `predicted_score` — что показали пользователю;
+- `candidates` — `{status, reason, top[{slug, confidence}], processingMs, recognizer}`:
+  отдельных колонок под статус и причину отказа в таблице нет;
+- `matcher_version` — из `MATCHER_VERSION`, иначе имя распознавателя;
+- `truth_wine_slug` / `truth_absent` — пустые: эталон проставляет человек в админке, и
+  только после этого скан годится для дообучения.
+
+Дедупликации строк нет и не должно быть: один запрос — одна строка, повторные сканы того же
+вина это статистика, а не мусор. Уникальный индекс на такие строки не срабатывает, потому
+что у них `truth_wine_slug` и `ocr_provider` пустые (NULL в индексе не равен NULL).
+Метрики `label_scan_accuracy` прод-строки не задевают — вьюха считает только `eval_set`.
+
+Свежие сканы без эталона:
+
+```sql
+SELECT id, image_path, predicted_wine_slug, candidates->>'status' AS status, created_at
+FROM label_scans
+WHERE source = 'production' AND truth_wine_slug IS NULL AND NOT truth_absent
+ORDER BY created_at DESC;
+```
+
 ## Self-test на рендерах каталога
 
 `npm run selftest` прогоняет OCR по всем 2041 рендеру и матчит обратно в каталог,

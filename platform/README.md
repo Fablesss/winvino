@@ -88,6 +88,14 @@ RECOGNIZER=model RECOGNIZER_URL=http://127.0.0.1:8080 DATABASE_URL=postgresql://
 и не дойдёт до клиентов. Зависший распознаватель прерывается через `RECOGNIZE_TIMEOUT_MS`
 и превращается в `503`.
 
+## Архив прод-сканов
+
+`SCAN_ARCHIVE=on` (нужен `DATABASE_URL`) — каждое распознавание сохраняется: фото файлом в
+`SCAN_ARCHIVE_DIR` под именем-sha256, строка — в `label_scans` с `source='production'` и тем
+же `id`, что ушёл клиенту. Это вход для дообучения: эталон (`truth_wine_slug`) проставляется
+потом руками. Запись идёт мимо ответа и свои сбои гасит в лог — `api/src/scans/scanArchive.ts`,
+колонки описаны в `docs/DATABASE.md`.
+
 Мок отвечает детерминированно по sha256 фото: одно фото — один ответ. Примерно 60% фото
 дают `matched`, 25% — `ambiguous`, 15% — `not_found`. Вина — 10 реальных из каталога.
 

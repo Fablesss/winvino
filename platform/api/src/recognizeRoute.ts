@@ -4,6 +4,7 @@ import type { Context } from 'hono';
 import { respondWithApiError } from './apiError.ts';
 import { inspectImage, type InspectedImage } from './image/inspectImage.ts';
 import { RecognizerUnavailableError, type RecognitionOutcome, type Recognizer } from './recognizer/recognizer.ts';
+import type { ScanArchive } from './scans/scanArchive.ts';
 
 /** Запас на multipart-обёртку сверх самого файла: границы, заголовки частей. */
 export const MULTIPART_ENVELOPE_BYTES = 64 * 1024;
@@ -25,7 +26,7 @@ async function recognizeWithDeadline(
   return Promise.race([recognizer.recognizeLabel(image, signal), deadline]);
 }
 
-export function createRecognizeHandler(deps: { recognizer: Recognizer; recognizeTimeoutMs: number }) {
+export function createRecognizeHandler(deps: { recognizer: Recognizer; recognizeTimeoutMs: number; archive?: ScanArchive | null }) {
   return async function handleRecognize(c: Context): Promise<Response> {
     const contentType = c.req.header('content-type')?.toLowerCase() ?? '';
     if (!contentType.startsWith('multipart/form-data')) {
@@ -60,18 +61,32 @@ export function createRecognizeHandler(deps: { recognizer: Recognizer; recognize
 
     // Распознаватель — граница: мок сегодня, Python-модель завтра. Кривой ответ не уходит
     // четырём клиентам, а становится 500 с понятной записью в логе.
-    const recognition = RecognitionSchema.safeParse({
-      ...outcome,
-      id: randomUUID(),
-      processingMs: Math.round(performance.now() - startedAt),
-      createdAt: new Date().toISOString(),
-    });
+    const id = randomUUID();
+    const processingMs = Math.round(performance.now() - startedAt);
+    const recognition = RecognitionSchema.safeParse({ ...outcome, id, processingMs, createdAt: new Date().toISOString() });
     if (!recognition.success) {
       console.error(
         JSON.stringify({ event: 'recognizer_contract_violation', requestId: c.get('requestId'), recognizer: deps.recognizer.name, issues: recognition.error.issues }),
       );
       return respondWithApiError(c, 'INTERNAL_ERROR');
     }
+
+    // Архив не в критическом пути: ответ уже готов, а сохранение идёт своим темпом и молча
+    // пишет в лог при сбое. Id общий с ответом — по нему скан потом размечают.
+    void deps.archive
+      ?.save({
+        id,
+        imageBytes: inspection.image.bytes,
+        imageMimeType: inspection.image.mimeType,
+        outcome,
+        processingMs,
+        recognizer: deps.recognizer.name,
+      })
+      // Архив свои сбои гасит сам; этот catch — страховка от необработанного отклонения,
+      // которое иначе уронило бы процесс уже после отправленного ответа.
+      .catch((error: Error) => {
+        console.error(JSON.stringify({ event: 'scan_archive_failed', requestId: c.get('requestId'), scanId: id, message: error.message }));
+      });
     return c.json(recognition.data);
   };
 }

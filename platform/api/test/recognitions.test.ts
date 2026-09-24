@@ -11,15 +11,35 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.ts';
 import { createMockRecognizer } from '../src/recognizer/mockRecognizer.ts';
 import { RecognizerUnavailableError, type Recognizer } from '../src/recognizer/recognizer.ts';
+import { scanRow, type ScanArchive, type ScanRecord } from '../src/scans/scanArchive.ts';
 import { CORRUPT_JPEG, HEIC_HEADER, renderTestImage } from './testImages.ts';
 
 const TEST_TIMEOUT_MS = 200;
 
-function createTestApp(recognizer: Recognizer = createMockRecognizer({ delayMs: 0 }), corsOrigins: '*' | string[] = '*') {
+function createTestApp(recognizer: Recognizer = createMockRecognizer({ delayMs: 0 }), corsOrigins: '*' | string[] = '*', archive?: ScanArchive) {
   return createApp({
     config: { corsOrigins, recognizeTimeoutMs: TEST_TIMEOUT_MS, isAccessLogEnabled: false },
     recognizer,
+    archive,
   });
+}
+
+/** Архив пишет уже после ответа, поэтому тест ждёт не ответа, а самой записи. */
+function createRecordingArchive(onSave: (record: ScanRecord) => Promise<void> = async () => {}) {
+  const records: ScanRecord[] = [];
+  let markSaved: () => void = () => {};
+  const saved = new Promise<void>((resolve) => (markSaved = resolve));
+  const archive: ScanArchive = {
+    async save(record) {
+      records.push(record);
+      try {
+        await onSave(record);
+      } finally {
+        markSaved();
+      }
+    },
+  };
+  return { records, saved, archive };
 }
 
 function postImage(app: ReturnType<typeof createApp>, bytes: Uint8Array, options: { field?: string; type?: string; headers?: Record<string, string> } = {}) {
@@ -131,6 +151,44 @@ describe(`POST ${API_ROUTES.recognitions}`, () => {
       recognizeLabel: async () => ({ status: 'matched', reason: null, match: null, alternatives: [] }),
     } as unknown as Recognizer;
     await expectApiError(await postImage(createTestApp(brokenRecognizer), await renderTestImage('jpeg')), 500, 'INTERNAL_ERROR');
+  });
+
+  it('archivesScanUnderTheSameIdThatWentToClient', async () => {
+    const { records, saved, archive } = createRecordingArchive();
+    const photo = await renderTestImage('jpeg', { seed: 7 });
+
+    const recognition = RecognitionSchema.parse(await (await postImage(createTestApp(undefined, '*', archive), photo)).json());
+    await saved;
+
+    expect(records).toHaveLength(1);
+    const [scan] = records;
+    if (!scan) throw new Error('архив ничего не получил');
+    const row = scanRow(scan, 'test-matcher');
+    expect(row.id).toBe(recognition.id);
+    expect(row.source).toBe('production');
+    expect(row.predictedWineSlug).toBe(recognition.match?.wine.slug ?? null);
+    expect(row.candidates.status).toBe(recognition.status);
+    expect(scan.imageBytes).toEqual(photo);
+  });
+
+  it('answersClientEvenWhenArchiveIsDown', async () => {
+    const { saved, archive } = createRecordingArchive(async () => {
+      throw new Error('база недоступна');
+    });
+
+    const response = await postImage(createTestApp(undefined, '*', archive), await renderTestImage('jpeg'));
+
+    expect(response.status).toBe(200);
+    expect(RecognitionSchema.safeParse(await response.json()).success).toBe(true);
+    await expect(saved).resolves.toBeUndefined();
+  });
+
+  it('doesNotArchiveRejectedImages', async () => {
+    const { records, archive } = createRecordingArchive();
+
+    await expectApiError(await postImage(createTestApp(undefined, '*', archive), CORRUPT_JPEG), 422, 'IMAGE_UNREADABLE');
+
+    expect(records).toEqual([]);
   });
 
   it('propagatesClientRequestIdIntoErrorBody', async () => {

@@ -8,6 +8,13 @@ export type InspectedImage = {
   height: number;
 };
 
+/** Расширение файла по формату: для имени в архиве сканов и в форме к сервису распознавания. */
+export const IMAGE_EXTENSION: Record<AcceptedImageType, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
 export type ImageRejection = {
   code: Extract<ApiErrorCode, 'UNSUPPORTED_IMAGE_TYPE' | 'IMAGE_UNREADABLE' | 'IMAGE_TOO_SMALL'>;
   message?: string;

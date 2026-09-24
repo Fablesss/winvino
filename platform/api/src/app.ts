@@ -14,10 +14,13 @@ import { respondWithApiError } from './apiError.ts';
 import type { ApiConfig } from './config.ts';
 import { createRecognizeHandler, MULTIPART_ENVELOPE_BYTES } from './recognizeRoute.ts';
 import type { Recognizer } from './recognizer/recognizer.ts';
+import type { ScanArchive } from './scans/scanArchive.ts';
 
 export type AppDeps = {
   config: Pick<ApiConfig, 'corsOrigins' | 'recognizeTimeoutMs' | 'isAccessLogEnabled'>;
   recognizer: Recognizer;
+  /** Архив прод-сканов; null или отсутствует — распознавания нигде не сохраняются. */
+  archive?: ScanArchive | null;
 };
 
 const CORS_MAX_AGE_SECONDS = 600;
@@ -30,7 +33,7 @@ const API_DOCS_HTML = `<!doctype html>
 <body><script id="api-reference" data-url="${API_ROUTES.openApi}"></script>
 <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script></body></html>`;
 
-export function createApp({ config, recognizer }: AppDeps): Hono {
+export function createApp({ config, recognizer, archive }: AppDeps): Hono {
   const app = new Hono();
   const openApiDocument = buildOpenApiDocument();
 
@@ -73,7 +76,7 @@ export function createApp({ config, recognizer }: AppDeps): Hono {
       maxSize: MAX_IMAGE_BYTES + MULTIPART_ENVELOPE_BYTES,
       onError: (c) => respondWithApiError(c, 'IMAGE_TOO_LARGE', { details: { maxBytes: MAX_IMAGE_BYTES } }),
     }),
-    createRecognizeHandler({ recognizer, recognizeTimeoutMs: config.recognizeTimeoutMs }),
+    createRecognizeHandler({ recognizer, recognizeTimeoutMs: config.recognizeTimeoutMs, archive }),
   );
 
   app.notFound((c) => respondWithApiError(c, 'NOT_FOUND', { details: { method: c.req.method, path: c.req.path } }));

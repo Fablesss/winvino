@@ -10,6 +10,8 @@
 # Переменные (Dokploy → Environment пишет их в .env рядом с этим файлом):
 #   DATABASE_URL      Postgres с каталогом вин (обязательно)
 #   CORS_ORIGINS      origin браузерных клиентов с чужих доменов; веб ходит через свой /api
+#   SCAN_ARCHIVE      off — не сохранять прод-сканы (по умолчанию on: фото в том scans, строка в label_scans)
+#   MATCHER_VERSION   версия релиза модели в строке скана, например siglip2-b16-ft1-e4
 #   COMPOSE_PROFILES=bot  включает Telegram-бота; тогда нужен TELEGRAM_BOT_TOKEN, по желанию WEB_APP_URL
 services:
   recognizer:
@@ -43,6 +45,14 @@ services:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL не задан}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       RECOGNIZE_TIMEOUT_MS: ${RECOGNIZE_TIMEOUT_MS:-30000}
+      # Архив сканов: фото в том scans, строка в label_scans (source=production).
+      # Это данные для дообучения и для разметки, поэтому по умолчанию включён.
+      SCAN_ARCHIVE: ${SCAN_ARCHIVE:-on}
+      SCAN_ARCHIVE_DIR: /data/scans
+      # Версия релиза модели, с которой получено предсказание; пусто — запишется имя распознавателя
+      MATCHER_VERSION: ${MATCHER_VERSION:-}
+    volumes:
+      - scans:/data/scans
     expose:
       - "8787"
     depends_on:
@@ -83,6 +93,10 @@ services:
       - api
     networks:
       - internal
+
+# Фотографии сканов переживают пересборку образа: это набор для дообучения, а не кеш.
+volumes:
+  scans:
 
 networks:
   internal:
