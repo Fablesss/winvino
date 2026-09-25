@@ -78,8 +78,17 @@ export class ApiConfigError extends Error {
   }
 }
 
+/**
+ * Compose подставляет незаданную необязательную переменную пустой строкой (`${MATCHER_VERSION:-}`),
+ * и Dokploy пишет то же самое для пустого поля в Environment. Считаем её отсутствующей: иначе
+ * `.optional()` и `.default()` не срабатывают и API падает на старте в цикле перезапусков.
+ */
+function withoutEmptyValues(env: Record<string, string | undefined>): Record<string, string | undefined> {
+  return Object.fromEntries(Object.entries(env).filter(([, value]) => value?.trim() !== ''));
+}
+
 export function loadApiConfig(env: Record<string, string | undefined>): ApiConfig {
-  const parsed = ApiEnvSchema.safeParse(env);
+  const parsed = ApiEnvSchema.safeParse(withoutEmptyValues(env));
   if (!parsed.success) {
     throw new ApiConfigError(parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`));
   }

@@ -29,6 +29,12 @@ describe('loadApiConfig', () => {
     expect(loadApiConfig({ ...env, MODEL_MATCHED_MIN_CONFIDENCE: '0.9' }).model?.thresholds.matchedMinConfidence).toBe(0.9);
   });
 
+  // Compose и Dokploy пишут незаданную переменную как `VAR=`; API не должен падать на старте.
+  it('treatsEmptyVariableAsUnset', () => {
+    const env = { SCAN_ARCHIVE: 'on', DATABASE_URL: 'postgres://u:p@db/winvino', MATCHER_VERSION: '', CORS_ORIGINS: '', RECOGNIZE_TIMEOUT_MS: '' };
+    expect(loadApiConfig(env)).toMatchObject({ corsOrigins: '*', recognizeTimeoutMs: 30_000, scanArchive: { matcherVersion: null } });
+  });
+
   it('keepsScanArchiveOffUntilAskedAndThenNeedsDatabase', () => {
     expect(loadApiConfig({}).scanArchive).toBeNull();
     expect(() => loadApiConfig({ SCAN_ARCHIVE: 'on' })).toThrow(/DATABASE_URL/);
