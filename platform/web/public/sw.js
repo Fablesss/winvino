@@ -54,7 +54,9 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
+  // /admin — внутренний раздел разметки: не оболочка приложения и не офлайн-страница. Без этой
+  // проверки навигация туда перезаписала бы кеш SHELL_URL, и офлайн сканер открывал бы админку.
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(respondToNavigation(request));

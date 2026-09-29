@@ -9,6 +9,7 @@ import { openApiComponents } from './schemaRegistry.ts';
 export const API_ERROR_HTTP_STATUS = {
   INVALID_REQUEST: 400,
   IMAGE_REQUIRED: 400,
+  UNAUTHORIZED: 401,
   NOT_FOUND: 404,
   IMAGE_TOO_LARGE: 413,
   UNSUPPORTED_IMAGE_TYPE: 415,

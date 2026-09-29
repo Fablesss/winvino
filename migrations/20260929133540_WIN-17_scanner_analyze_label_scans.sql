@@ -1,0 +1,12 @@
+-- WIN-17: пересобрать статистику по label_scans.
+--
+-- Отдельным файлом, а не строкой в предыдущей миграции: та уже применена, а применённые
+-- миграции не правят — иначе файл и база разъезжаются молча (scripts/migrate.mjs это и ловит).
+--
+-- Зачем: статистика осталась с тех пор, когда прод-сканов в таблице не было — планировщик
+-- оценивал очередь в одну строку и вместо новых индексов брал label_scans_source_idx плюс
+-- сортировку. EXPLAIN очереди до ANALYZE:
+--   Limit -> Sort (created_at DESC, id DESC) -> Index Scan using label_scans_source_idx
+-- после:
+--   Limit -> Index Only Scan using label_scans_pending_truth_idx
+ANALYZE public.label_scans;

@@ -6,6 +6,7 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status';
 const DEFAULT_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   INVALID_REQUEST: 'Ожидается multipart/form-data с фото в поле «image».',
   IMAGE_REQUIRED: 'Не пришло фото: добавьте файл в поле «image».',
+  UNAUTHORIZED: 'Нужна авторизация: передайте токен в заголовке Authorization.',
   NOT_FOUND: 'Такого адреса в API нет.',
   IMAGE_TOO_LARGE: `Фото больше ${MAX_IMAGE_BYTES / 1024 / 1024} МБ. Уменьшите его и отправьте снова.`,
   UNSUPPORTED_IMAGE_TYPE: 'Поддерживаются только фото в JPEG, PNG и WebP.',

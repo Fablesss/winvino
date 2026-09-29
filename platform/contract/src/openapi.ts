@@ -11,7 +11,7 @@ import { API_ROUTES, REQUEST_ID_HEADER } from './routes.ts';
 import { openApiComponents } from './schemaRegistry.ts';
 
 /** Версия документа. Добавили поле или код ошибки — minor; сломали — новый /v2. */
-export const OPENAPI_DOCUMENT_VERSION = '1.0.0';
+export const OPENAPI_DOCUMENT_VERSION = '1.1.0';
 
 export type OpenApiDocument = {
   openapi: '3.1.0';

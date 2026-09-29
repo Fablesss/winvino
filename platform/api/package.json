@@ -8,7 +8,8 @@
     "dev": "node --env-file-if-exists=.env --watch src/server.ts",
     "start": "node --env-file-if-exists=.env src/server.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "selftest:admin": "node --env-file-if-exists=../../.env --env-file-if-exists=.env scripts/selftest-admin-queue.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.1",

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "winvino API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Распознавание российского вина по фото этикетки. Один контракт для Telegram Mini App,\nTelegram-бота, PWA и нативных приложений.\n\nОшибки приходят в едином формате `ApiError`. Незнакомый клиенту `code` обрабатывается\nкак общая ошибка по HTTP-статусу — новые коды добавляются без смены версии."
   },
   "paths": {
@@ -189,6 +189,7 @@
         "enum": [
           "INVALID_REQUEST",
           "IMAGE_REQUIRED",
+          "UNAUTHORIZED",
           "NOT_FOUND",
           "IMAGE_TOO_LARGE",
           "UNSUPPORTED_IMAGE_TYPE",

@@ -27,6 +27,12 @@ export const RECOMMENDED_MAX_IMAGE_SIDE_PX = 1600;
 /** Почему не нашли: подсказка клиенту, предложить переснять или сказать «нет в каталоге». */
 export const NOT_FOUND_REASONS = ['unreadable', 'not_in_catalog'] as const;
 
+/**
+ * Перечень значений `Recognition.status` списком — для кода, которому нужен не разбор ответа,
+ * а именно набор значений: например разбор сохранённого скана в очереди разметки.
+ */
+export const RECOGNITION_STATUSES = ['matched', 'ambiguous', 'not_found'] as const;
+
 export const WineCandidateSchema = z
   .object({
     wine: WineSchema,

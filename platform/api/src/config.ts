@@ -1,3 +1,4 @@
+import { ADMIN_PASSWORD_MIN_LENGTH } from '@winvino/contract';
 import { z } from 'zod';
 import { DEFAULT_MODEL_THRESHOLDS, type ModelThresholds } from './recognizer/modelRecognizer.ts';
 
@@ -31,6 +32,14 @@ const ApiEnvSchema = z
     SCAN_ARCHIVE_DIR: z.string().min(1).default('./data/scans'),
     /** Чем получено предсказание — версия релиза модели, например siglip2-b16-ft1-e4. */
     MATCHER_VERSION: z.string().min(1).optional(),
+
+    // ── Очередь разметки (/v1/admin/*) ──
+    /**
+     * Общий секрет раздела разметки: им же веб подписывает свою cookie сессии. Не задан —
+     * роуты /v1/admin/* не регистрируются и отвечают 404, то есть наружу по умолчанию ничего
+     * не торчит. Короткий пароль тут бессмысленен: единственная защита от перебора — длина.
+     */
+    ADMIN_PASSWORD: z.string().min(ADMIN_PASSWORD_MIN_LENGTH).optional(),
   })
   .superRefine((vars, ctx) => {
     if (vars.RECOGNIZER === 'model') {
@@ -40,6 +49,9 @@ const ApiEnvSchema = z
     }
     if (vars.SCAN_ARCHIVE === 'on' && !vars.DATABASE_URL) {
       ctx.addIssue({ code: 'custom', path: ['DATABASE_URL'], message: 'обязательна при SCAN_ARCHIVE=on' });
+    }
+    if (vars.ADMIN_PASSWORD && !vars.DATABASE_URL) {
+      ctx.addIssue({ code: 'custom', path: ['DATABASE_URL'], message: 'обязательна при заданном ADMIN_PASSWORD' });
     }
   });
 
@@ -57,6 +69,13 @@ export type ScanArchiveConfig = {
   matcherVersion: string | null;
 };
 
+export type AdminConfig = {
+  password: string;
+  databaseUrl: string;
+  /** Тот же каталог, куда пишет архив сканов: очередь показывает уже сохранённые фото. */
+  scansDir: string;
+};
+
 export type ApiConfig = {
   host: string;
   port: number;
@@ -69,6 +88,8 @@ export type ApiConfig = {
   model: ModelRecognizerConfig | null;
   /** Заполнено только при SCAN_ARCHIVE=on. */
   scanArchive: ScanArchiveConfig | null;
+  /** Заполнено только при заданном ADMIN_PASSWORD; null — раздела разметки нет. */
+  admin: AdminConfig | null;
 };
 
 export class ApiConfigError extends Error {
@@ -112,6 +133,9 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
   const scanArchive = vars.SCAN_ARCHIVE === 'on' && vars.DATABASE_URL
     ? { dir: vars.SCAN_ARCHIVE_DIR, databaseUrl: vars.DATABASE_URL, matcherVersion: vars.MATCHER_VERSION ?? null }
     : null;
+  const admin = vars.ADMIN_PASSWORD && vars.DATABASE_URL
+    ? { password: vars.ADMIN_PASSWORD, databaseUrl: vars.DATABASE_URL, scansDir: vars.SCAN_ARCHIVE_DIR }
+    : null;
   return {
     host: vars.HOST,
     port: vars.PORT,
@@ -122,5 +146,6 @@ export function loadApiConfig(env: Record<string, string | undefined>): ApiConfi
     isAccessLogEnabled: vars.ACCESS_LOG === 'on',
     model,
     scanArchive,
+    admin,
   };
 }

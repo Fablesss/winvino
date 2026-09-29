@@ -44,4 +44,16 @@ describe('loadApiConfig', () => {
       matcherVersion: null,
     });
   });
+
+  it('keepsAdminQueueOffUntilPasswordIsSet', () => {
+    expect(loadApiConfig({}).admin).toBeNull();
+    // Короткий пароль — это открытая наружу очередь: единственная защита от перебора тут длина.
+    expect(() => loadApiConfig({ ADMIN_PASSWORD: 'korotkiy', DATABASE_URL: 'postgres://u:p@db/winvino' })).toThrow(/ADMIN_PASSWORD/);
+    expect(() => loadApiConfig({ ADMIN_PASSWORD: 'razmetka-parol-12' })).toThrow(/DATABASE_URL/);
+    expect(loadApiConfig({ ADMIN_PASSWORD: 'razmetka-parol-12', DATABASE_URL: 'postgres://u:p@db/winvino' }).admin).toEqual({
+      password: 'razmetka-parol-12',
+      databaseUrl: 'postgres://u:p@db/winvino',
+      scansDir: './data/scans',
+    });
+  });
 });

@@ -10,6 +10,7 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
+import { createAdminRoutes, type AdminDeps } from './admin/adminRoutes.ts';
 import { respondWithApiError } from './apiError.ts';
 import type { ApiConfig } from './config.ts';
 import { createRecognizeHandler, MULTIPART_ENVELOPE_BYTES } from './recognizeRoute.ts';
@@ -21,6 +22,8 @@ export type AppDeps = {
   recognizer: Recognizer;
   /** Архив прод-сканов; null или отсутствует — распознавания нигде не сохраняются. */
   archive?: ScanArchive | null;
+  /** Очередь разметки; null или отсутствует — роутов /v1/admin/* нет вообще, они отдают 404. */
+  admin?: AdminDeps | null;
 };
 
 const CORS_MAX_AGE_SECONDS = 600;
@@ -33,7 +36,7 @@ const API_DOCS_HTML = `<!doctype html>
 <body><script id="api-reference" data-url="${API_ROUTES.openApi}"></script>
 <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script></body></html>`;
 
-export function createApp({ config, recognizer, archive }: AppDeps): Hono {
+export function createApp({ config, recognizer, archive, admin }: AppDeps): Hono {
   const app = new Hono();
   const openApiDocument = buildOpenApiDocument();
 
@@ -78,6 +81,8 @@ export function createApp({ config, recognizer, archive }: AppDeps): Hono {
     }),
     createRecognizeHandler({ recognizer, recognizeTimeoutMs: config.recognizeTimeoutMs, archive }),
   );
+
+  if (admin) app.route('/', createAdminRoutes(admin));
 
   app.notFound((c) => respondWithApiError(c, 'NOT_FOUND', { details: { method: c.req.method, path: c.req.path } }));
   app.onError((error, c) => {

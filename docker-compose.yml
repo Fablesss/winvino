@@ -12,6 +12,7 @@
 #   CORS_ORIGINS      origin браузерных клиентов с чужих доменов; веб ходит через свой /api
 #   SCAN_ARCHIVE      off — не сохранять прод-сканы (по умолчанию on: фото в том scans, строка в label_scans)
 #   MATCHER_VERSION   версия релиза модели в строке скана, например siglip2-b16-ft1-e4
+#   ADMIN_PASSWORD    включает раздел разметки на web/admin (не короче 12 символов); пусто — раздела нет
 #   COMPOSE_PROFILES=bot  включает Telegram-бота; тогда нужен TELEGRAM_BOT_TOKEN, по желанию WEB_APP_URL
 services:
   recognizer:
@@ -51,6 +52,9 @@ services:
       SCAN_ARCHIVE_DIR: /data/scans
       # Версия релиза модели, с которой получено предсказание; пусто — запишется имя распознавателя
       MATCHER_VERSION: ${MATCHER_VERSION:-}
+      # Очередь разметки /v1/admin/*: пусто — роутов нет вовсе, наружу ничего не торчит.
+      # Тот же секрет задан вебу: им он подписывает свою cookie и им же ходит в это API.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     volumes:
       - scans:/data/scans
     expose:
@@ -68,6 +72,11 @@ services:
       args:
         WINVINO_API_URL: http://api:8787
     restart: unless-stopped
+    environment:
+      # Адрес API нужен ещё и в рантайме: страницы /admin ходят в него с сервера, мимо прокси /api/*.
+      WINVINO_API_URL: http://api:8787
+      # Пусто — раздела разметки нет: /admin отвечает 404. Значение обязано совпадать с api.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     expose:
       - "3000"
     depends_on:

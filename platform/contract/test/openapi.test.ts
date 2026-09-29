@@ -40,7 +40,9 @@ describe('OpenAPI document', () => {
   it('recognitionEndpointDocumentsEveryErrorCodeExceptRouting', () => {
     const recognize = (document.paths[API_ROUTES.recognitions] as { post: { responses: Record<string, { description: string }> } }).post;
     const documented = Object.values(recognize.responses).map((response) => response.description).join(' ');
-    for (const code of API_ERROR_CODES.filter((errorCode) => errorCode !== 'NOT_FOUND')) {
+    // NOT_FOUND — про маршрутизацию, UNAUTHORIZED — про закрытые роуты /v1/admin/*: на публичном
+    // распознавании ни того, ни другого не бывает.
+    for (const code of API_ERROR_CODES.filter((errorCode) => errorCode !== 'NOT_FOUND' && errorCode !== 'UNAUTHORIZED')) {
       expect(documented, code).toContain(code);
     }
   });
