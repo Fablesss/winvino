@@ -77,18 +77,33 @@ npm run db:migrate
 npm run catalog:sync
 npm run db:verify
 
-# 3. Распознаватель — модель из artifacts/
+# 3. Склеить чекпойнт из частей и сверить контрольные суммы
+cat artifacts/model/checkpoints/ft1-best.pt.part* > artifacts/model/checkpoints/ft1-best.pt
+(cd artifacts && sha256sum -c bundle.sha256sums)
+
+# 4. Распознаватель — модель из artifacts/
 WINVINO_DATA_DIR=artifacts npm run serve:recognizer     # http://127.0.0.1:8080
 
-# 4. API и веб — отдельный npm-workspace, в соседних терминалах
+# 5. API и веб — отдельный npm-workspace, в соседних терминалах
 cd platform && npm install
 RECOGNIZER=model RECOGNIZER_URL=http://127.0.0.1:8080 DATABASE_URL=… npm run dev:api
 npm run dev:web                  # http://localhost:3000, /api/* проксируется в API
 ```
 
-Шаги 3 и 4 показаны в синтаксисе bash. В cmd переменные задаются отдельной строкой
-(`set WINVINO_DATA_DIR=artifacts`), в PowerShell — через `$env:`; постоянные значения удобнее
-положить в `.env` рядом с пакетом, `api` и `bot` подхватывают его сами.
+Шаги 3–5 показаны в синтаксисе bash. В cmd переменные задаются отдельной строкой
+(`set "WINVINO_DATA_DIR=artifacts"` — кавычки обязательны, иначе в значение попадёт пробел),
+в PowerShell — через `$env:`; постоянные значения удобнее положить в `.env` рядом с пакетом,
+`api` и `bot` подхватывают его сами. Склейка на Windows — `copy /b` из папки с частями:
+
+```
+copy /b ft1-best.pt.part00+ft1-best.pt.part01+ft1-best.pt.part02+ft1-best.pt.part03 ft1-best.pt
+certutil -hashfile ft1-best.pt SHA256
+```
+
+Без этого шага распознаватель падает с `FileNotFoundError: …/ft1-best.pt`: в git чекпойнт лежит
+частями по 90 МиБ, потому что GitHub не принимает файлы больше 100 МиБ. В образе распознавателя
+склейку делает сборка (`deploy/recognizer.Dockerfile`, стадия `artifacts`), вручную это нужно
+только при запуске без Docker.
 
 Веб без базы и без модели тоже поднимается: `RECOGNIZER=mock` (значение по умолчанию) —
 детерминированная заглушка по sha256 фото, 10 реальных вин из каталога. Этого хватает,
