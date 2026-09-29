@@ -25,22 +25,36 @@
 /*
  * Тёмной темы на сайте нет — берём те же оттенки, но перевёрнутые:
  * тёплый коричневый вместо кремового, осветлённое бордо, чтобы белый текст на кнопке читался.
+ *
+ * Включается атрибутом, а не prefers-color-scheme: тему можно выбрать руками (lib/theme.ts),
+ * а системную настройку читает тот же код и кладёт сюда уже готовый ответ.
  */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #1a1614;
-    --surface: #241e1b;
-    --ink: #f2ece6;
-    --hint: #a89e97;
-    --line: #3a312d;
-    --action: #a9484e;
-    --action-hover: #c05a60;
-    --action-ink: #ffffff;
-    --action-soft: #2f2320;
-    --link: #e0a2a5;
-    --pill: #efdbc61a;
-    color-scheme: dark;
-  }
+:root[data-theme="dark"] {
+  --paper: #1a1614;
+  --surface: #241e1b;
+  --ink: #f2ece6;
+  --hint: #a89e97;
+  --line: #3a312d;
+  --action: #a9484e;
+  --action-hover: #c05a60;
+  --action-ink: #ffffff;
+  --action-soft: #2f2320;
+  --link: #e0a2a5;
+  --pill: #efdbc61a;
+  color-scheme: dark;
+}
+
+/*
+ * Перекрашенные фирменные картинки: в разметке лежат оба варианта, лишний прячем.
+ * Через CSS, а не через src в React: разметка одинакова на сервере и клиенте, поэтому
+ * после гидратации не мелькает картинка не той темы.
+ */
+:root:not([data-theme="dark"]) .art-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .art-light {
+  display: none;
 }
 
 @theme inline {

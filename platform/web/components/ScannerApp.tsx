@@ -5,8 +5,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toDisplayError, winvinoClient, type DisplayError } from "@/lib/apiClient";
 import { prepareLabelPhoto } from "@/lib/prepareLabelPhoto";
 import { registerServiceWorker, useInstallOption } from "@/lib/pwa";
-import { loadTelegramWebApp, prepareTelegramWindow, type TelegramWebApp } from "@/lib/telegram";
+import { applyTelegramWindowColor, loadTelegramWebApp, prepareTelegramWindow, type TelegramWebApp } from "@/lib/telegram";
 import { useTelegramBackButton, useTelegramMainButton } from "@/lib/useTelegramButtons";
+import { useTheme } from "@/lib/useTheme";
 import { CaptureScreen } from "./CaptureScreen";
 import { FailureScreen } from "./FailureScreen";
 import { usePhotoPicker } from "./PhotoPicker";
@@ -35,6 +36,12 @@ export function ScannerApp() {
 
   const telegram = host.kind === "telegram" ? host.webApp : null;
   const installOption = useInstallOption(host.kind === "web");
+  const { resolved: theme } = useTheme();
+
+  // Рамку окна мини-аппа красим сами — и при запуске, и когда тему переключили на ходу.
+  useEffect(() => {
+    if (telegram) applyTelegramWindowColor(telegram, theme);
+  }, [telegram, theme]);
 
   useEffect(() => {
     let isMounted = true;

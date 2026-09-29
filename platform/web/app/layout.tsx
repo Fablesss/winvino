@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display } from "next/font/google";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { APP_DESCRIPTION, APP_NAME, APP_TITLE, BRAND_COLORS } from "./brand";
 import "./globals.css";
 
@@ -21,16 +22,18 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: BRAND_COLORS.paper },
-    { media: "(prefers-color-scheme: dark)", color: BRAND_COLORS.paperDark },
-  ],
+  // Один тег без media: цвет рамки ведёт выбранная тема, его правит THEME_INIT_SCRIPT и lib/theme.ts.
+  themeColor: BRAND_COLORS.paper,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className={`${playfair.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">{children}</body>
+    // suppressHydrationWarning — data-theme на <html> появляется до гидратации, из скрипта ниже.
+    <html lang="ru" className={`${playfair.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="min-h-full font-sans">
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- статичная svg-иллюстрация из public, оптимизатору Next тут нечего делать */
 import type { InstallOption } from "@/lib/pwa";
 import { ActionButton } from "./ActionButton";
 import { AppHeader } from "./AppHeader";
@@ -39,10 +40,8 @@ export function CaptureScreen({ onTakePhoto, onChooseFromGallery, installOption 
 
         {/* Блок сканирования с /wines: кремовая карточка, иллюстрация, кнопка и текстовая ссылка. */}
         <section className="mt-6 flex flex-col items-center rounded-3xl bg-surface px-8 pt-8 pb-6">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" srcSet="/brand/scanner-dark.svg" />
-            <img src="/brand/scanner.svg" alt="Этикетка в кадре целиком" width={119} height={120} />
-          </picture>
+          <img src="/brand/scanner.svg" alt="Этикетка в кадре целиком" width={119} height={120} className="art-light" />
+          <img src="/brand/scanner-dark.svg" alt="Этикетка в кадре целиком" width={119} height={120} className="art-dark" />
           <ActionButton variant="primary" className="mt-8" onClick={onTakePhoto}>
             Сфотографировать этикетку
           </ActionButton>

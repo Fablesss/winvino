@@ -3,6 +3,7 @@
  * Справочник: https://core.telegram.org/bots/webapps
  */
 import { BRAND_COLORS } from "../app/brand";
+import type { ResolvedTheme } from "./theme";
 
 export const TELEGRAM_WEB_APP_SCRIPT_URL = "https://telegram.org/js/telegram-web-app.js?63";
 
@@ -36,7 +37,6 @@ export type TelegramWebApp = {
   initData: string;
   platform: string;
   version: string;
-  colorScheme: "light" | "dark";
   isVersionAtLeast(version: string): boolean;
   ready(): void;
   expand(): void;
@@ -99,20 +99,22 @@ export async function loadTelegramWebApp(): Promise<TelegramWebApp | null> {
   return window.Telegram?.WebApp ?? null;
 }
 
-/**
- * Первичная настройка окна мини-аппа. Методы новее базовой версии — только если клиент их знает.
- * Цвета окна — фирменные, а не из темы клиента: внутри Telegram приложение выглядит так же,
- * как в браузере. Светлый/тёмный вариант выбираем по colorScheme — им же живёт prefers-color-scheme.
- */
+/** Первичная настройка окна мини-аппа. Методы новее базовой версии — только если клиент их знает. */
 export function prepareTelegramWindow(webApp: TelegramWebApp): void {
   document.documentElement.dataset.telegram = webApp.platform;
-  if (webApp.isVersionAtLeast("6.1")) {
-    const windowColor = webApp.colorScheme === "dark" ? BRAND_COLORS.paperDark : BRAND_COLORS.paper;
-    webApp.setHeaderColor(windowColor);
-    webApp.setBackgroundColor(windowColor);
-  }
   // Длинная карточка вина скроллится, и свайп вниз не должен закрывать приложение.
   if (webApp.isVersionAtLeast("7.7")) webApp.disableVerticalSwipes();
   webApp.expand();
   webApp.ready();
+}
+
+/**
+ * Цвет окна мини-аппа — фирменный и по выбранной в приложении теме, а не из темы клиента:
+ * внутри Telegram приложение выглядит так же, как в браузере, и переключатель работает там же.
+ */
+export function applyTelegramWindowColor(webApp: TelegramWebApp, theme: ResolvedTheme): void {
+  if (!webApp.isVersionAtLeast("6.1")) return;
+  const windowColor = theme === "dark" ? BRAND_COLORS.paperDark : BRAND_COLORS.paper;
+  webApp.setHeaderColor(windowColor);
+  webApp.setBackgroundColor(windowColor);
 }

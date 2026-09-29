@@ -4,6 +4,9 @@ import { RECOGNITIONS, renderLabelPhoto } from "./fixtures";
 const RECOGNITIONS_ROUTE = "**/api/v1/recognitions";
 /** Не внутри test-results: Playwright чистит его перед каждым прогоном. */
 const SCREENSHOTS_DIR = "e2e-screens";
+/** BRAND_COLORS.paper и paperDark, как их отдаёт getComputedStyle. */
+const PAPER_LIGHT = "rgb(254, 253, 250)";
+const PAPER_DARK = "rgb(26, 22, 20)";
 
 async function stubRecognition(page: Page, body: unknown, status = 200) {
   await page.route(RECOGNITIONS_ROUTE, (route) =>
@@ -117,14 +120,47 @@ test.describe("веб / PWA", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
 
-    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(26, 22, 20)");
-    // <picture> подменяет и логотип, и иллюстрацию сканера: светлые оригиналы на тёмном не читаются.
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_DARK);
+    // Видимыми остаются только перекрашенные логотип и иллюстрация: светлые на тёмном не читаются.
     const themedArt = page.getByRole("img", { name: /Своё Вино|Этикетка в кадре/ });
     await expect(themedArt).toHaveCount(2);
     for (const art of await themedArt.all()) {
       expect(await art.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("-dark.svg");
     }
     await page.screenshot({ path: `${SCREENSHOTS_DIR}/capture-dark.png`, fullPage: true });
+  });
+
+  test("переключатель темы: ручной выбор побеждает системный и переживает перезагрузку", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+
+    const toggle = page.getByRole("button", { name: /^Тема:/ });
+    const scannerArt = page.getByRole("img", { name: "Этикетка в кадре целиком" });
+    // Тегов theme-color в рантайме больше одного — цвет рамки верен, только если покрашены все.
+    const themeColors = () => page.locator('meta[name="theme-color"]').evaluateAll((metas) => metas.map((meta) => meta.getAttribute("content")));
+    await expect(toggle).toHaveAccessibleName(/^Тема: авто/);
+
+    await toggle.click();
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_LIGHT);
+    expect(new Set(await themeColors())).toEqual(new Set(["#FEFDFA"]));
+    expect(await scannerArt.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("/brand/scanner.svg");
+    await page.screenshot({ path: `${SCREENSHOTS_DIR}/capture-light-forced.png`, fullPage: true });
+
+    // Выбор лежит в localStorage — после перезагрузки светлая тема остаётся при системной тёмной.
+    await page.reload();
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_LIGHT);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    await toggle.click();
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_DARK);
+    expect(new Set(await themeColors())).toEqual(new Set(["#1A1614"]));
+
+    // Круг замкнулся: снова «авто» — тема опять идёт за системной.
+    await toggle.click();
+    await expect(toggle).toHaveAccessibleName(/^Тема: авто/);
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_DARK);
+    await page.emulateMedia({ colorScheme: "light" });
+    await expect(page.locator("body")).toHaveCSS("background-color", PAPER_LIGHT);
   });
 
   test("PWA: манифест с иконками и зарегистрированный service worker", async ({ page, request }) => {
