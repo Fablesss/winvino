@@ -5,7 +5,13 @@
 **/.env
 **/.env.*
 !**/.env.example
+# Playwright целиком: и спеки, и его конфиг. Конфиг — не «просто файл рядом»: он лежит внутри
+# tsconfig веба, и `next build` в образе его типизирует. Пока он ничего не импортировал из e2e,
+# это сходило с рук; стоило конфигу сослаться на e2e/adminEnv.ts — сборка образа упала на
+# TS2307, хотя локально всё зелёное. Исключаем обоих, чтобы пара не разъезжалась.
 web/e2e
+web/playwright.config.ts
 web/e2e-screens
+web/e2e-scans
 web/test-results
 web/playwright-report
