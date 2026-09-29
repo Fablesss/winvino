@@ -15,8 +15,8 @@ describe('convertBottleToChatJpeg', () => {
     expect(metadata).toMatchObject({ format: 'jpeg', width: 120, height: 160, hasAlpha: false });
     const { data } = await sharp(jpeg).raw().toBuffer({ resolveWithObject: true });
     const [red = 0, green = 0, blue = 0] = data;
-    // #F1F3EF с допуском на JPEG
-    expect(Math.abs(red - 0xf1) + Math.abs(green - 0xf3) + Math.abs(blue - 0xef)).toBeLessThan(9);
+    // #FDF9ED с допуском на JPEG
+    expect(Math.abs(red - 0xfd) + Math.abs(green - 0xf9) + Math.abs(blue - 0xed)).toBeLessThan(9);
   });
 
   it('keepsWideImageSize', async () => {

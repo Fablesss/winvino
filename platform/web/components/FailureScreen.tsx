@@ -23,8 +23,8 @@ export function FailureScreen({ error, previewUrl, onRetry, onRetake }: FailureS
   const canRetry = !RETAKE_ONLY_CODES.has(error.code);
   return (
     <main className="flex flex-1 flex-col justify-center gap-5 py-8" role="alert">
-      <img src={previewUrl} alt="Ваш снимок" className="aspect-[3/4] w-28 rounded-2xl bg-surface object-cover" />
-      <h1 className="text-[1.75rem] leading-tight font-semibold">Не получилось распознать</h1>
+      <img src={previewUrl} alt="Ваш снимок" className="aspect-[3/4] w-28 rounded-3xl bg-surface object-cover" />
+      <h1 className="text-[1.75rem]">Не получилось распознать</h1>
       <p className="max-w-[36ch] text-[1.0625rem] leading-relaxed">{error.message}</p>
       {error.requestId && <p className="text-sm text-hint">Номер запроса для поддержки: {error.requestId}</p>}
       <div className="flex flex-col gap-1">

@@ -1,11 +1,11 @@
 /**
- * Цвета, которые нужны вне CSS: манифест PWA, theme-color, иконки.
- * Те же значения — в app/globals.css (--paper, --ruby); меняются вместе.
+ * Цвета, которые нужны вне CSS: манифест PWA, theme-color, иконки, окно Telegram.
+ * Те же значения — в app/globals.css (--paper, --action); меняются вместе.
  */
 export const BRAND_COLORS = {
-  paper: '#F1F3EF',
-  paperDark: '#151D19',
-  ruby: '#8A1C3B',
+  paper: '#FEFDFA',
+  paperDark: '#1A1614',
+  ruby: '#8F3D42',
 } as const;
 
 export const APP_NAME = 'winvino';

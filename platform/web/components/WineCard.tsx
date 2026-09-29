@@ -7,6 +7,17 @@ export function wineSwatchClass(wine: Wine): string {
   return `wine-swatch-${wine.color ?? "unknown"}`;
 }
 
+/** Бейдж каталога: бокал и оценка до сотых — как на карточках vino-svoe.ru. */
+function RatingBadge({ rating }: { rating: number }) {
+  return (
+    <p className="rating-badge absolute top-4 left-4 z-1 flex items-center gap-1.5 rounded-2xl py-1.5 pr-3 pl-2.5 text-base leading-5 font-semibold">
+      <img src="/brand/rating-glass.svg" alt="" width={20} height={20} className="h-5 w-5 shrink-0 -translate-y-0.5 scale-150" />
+      <span className="tabular-nums">{rating.toFixed(2)}</span>
+      <span className="sr-only">из 5 по оценке каталога</span>
+    </p>
+  );
+}
+
 type WineCardProps = {
   wine: Wine;
   headingId: string;
@@ -25,7 +36,9 @@ export function WineCard({ wine, headingId, onOpenLink }: WineCardProps) {
   return (
     <article aria-labelledby={headingId}>
       <figure>
-        <div className={`flex h-80 items-end justify-center overflow-hidden rounded-[1.75rem] pt-6 ${wineSwatchClass(wine)}`}>
+        {/* Кремовая карточка с бутылкой и бейджем рейтинга — как wine-item на vino-svoe.ru. */}
+        <div className="relative flex h-80 items-end justify-center overflow-hidden rounded-4xl bg-surface pt-6">
+          {wine.rating !== null && <RatingBadge rating={wine.rating} />}
           {wine.imageUrl && (
             <img src={wine.imageUrl} alt={`Бутылка «${wine.title}»`} className="h-full w-auto max-w-[70%] object-contain object-bottom" />
           )}
@@ -33,11 +46,16 @@ export function WineCard({ wine, headingId, onOpenLink }: WineCardProps) {
         {wine.hue && <figcaption className="mt-2 px-1 text-sm text-hint">{wine.hue}</figcaption>}
       </figure>
 
-      <h1 id={headingId} tabIndex={-1} className="mt-6 font-label text-[2.125rem] leading-[1.12] text-balance outline-none">
+      <h1 id={headingId} tabIndex={-1} className="mt-6 text-[2.125rem] leading-[1.12] text-balance outline-none">
         {wine.title}
       </h1>
       {origin && <p className="mt-2 text-[1.0625rem]">{origin}</p>}
-      {wine.categoryLabel && <p className="mt-0.5 text-hint">{wine.categoryLabel}</p>}
+      {wine.categoryLabel && (
+        <p className="mt-1 flex items-center gap-2 text-hint">
+          <span className={`h-3 w-3 shrink-0 rounded-full ${wineSwatchClass(wine)}`} aria-hidden />
+          {wine.categoryLabel}
+        </p>
+      )}
 
       {facts.length > 0 && (
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-5">
@@ -54,12 +72,12 @@ export function WineCard({ wine, headingId, onOpenLink }: WineCardProps) {
 
       {wine.pairings.length > 0 && (
         <section className="mt-6" aria-labelledby={`${headingId}-pairings`}>
-          <h2 id={`${headingId}-pairings`} className="text-sm text-hint">
+          <h2 id={`${headingId}-pairings`} className="font-sans text-sm text-hint">
             Сочетается с
           </h2>
           <ul className="mt-2 flex flex-wrap gap-2">
             {wine.pairings.map((pairing) => (
-              <li key={pairing} className="rounded-full border border-line px-3 py-1 text-[0.9375rem]">
+              <li key={pairing} className="flex h-8 items-center rounded-2xl border border-line px-3 text-sm font-semibold text-action">
                 {pairing}
               </li>
             ))}

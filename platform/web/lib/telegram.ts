@@ -2,6 +2,7 @@
  * Telegram Mini App: минимальные типы используемой части WebApp API и условная загрузка SDK.
  * Справочник: https://core.telegram.org/bots/webapps
  */
+import { BRAND_COLORS } from "../app/brand";
 
 export const TELEGRAM_WEB_APP_SCRIPT_URL = "https://telegram.org/js/telegram-web-app.js?63";
 
@@ -98,12 +99,17 @@ export async function loadTelegramWebApp(): Promise<TelegramWebApp | null> {
   return window.Telegram?.WebApp ?? null;
 }
 
-/** Первичная настройка окна мини-аппа. Методы новее базовой версии — только если клиент их знает. */
+/**
+ * Первичная настройка окна мини-аппа. Методы новее базовой версии — только если клиент их знает.
+ * Цвета окна — фирменные, а не из темы клиента: внутри Telegram приложение выглядит так же,
+ * как в браузере. Светлый/тёмный вариант выбираем по colorScheme — им же живёт prefers-color-scheme.
+ */
 export function prepareTelegramWindow(webApp: TelegramWebApp): void {
   document.documentElement.dataset.telegram = webApp.platform;
   if (webApp.isVersionAtLeast("6.1")) {
-    webApp.setHeaderColor("bg_color");
-    webApp.setBackgroundColor("bg_color");
+    const windowColor = webApp.colorScheme === "dark" ? BRAND_COLORS.paperDark : BRAND_COLORS.paper;
+    webApp.setHeaderColor(windowColor);
+    webApp.setBackgroundColor(windowColor);
   }
   // Длинная карточка вина скроллится, и свайп вниз не должен закрывать приложение.
   if (webApp.isVersionAtLeast("7.7")) webApp.disableVerticalSwipes();

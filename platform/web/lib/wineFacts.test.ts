@@ -29,7 +29,6 @@ describe("listWineFacts", () => {
       { label: "Сорт", value: "Рислинг" },
       { label: "Крепость", value: "12,5 %" },
       { label: "Подавать при", value: "10–12 °C" },
-      { label: "Рейтинг каталога", value: "4,3 из 5" },
     ]);
   });
 

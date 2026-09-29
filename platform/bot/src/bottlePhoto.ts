@@ -6,8 +6,8 @@ import sharp from 'sharp';
  * верный MIME. Поэтому бот скачивает картинку сам и загружает её JPEG-ом.
  */
 
-/** Цвет бумаги веба (web/app/brand.ts, BRAND_COLORS.paper) — под прозрачный фон бутылки. */
-const BOTTLE_BACKGROUND = '#F1F3EF';
+/** Кремовая карточка каталога (web/app/globals.css, --surface) — под прозрачный фон бутылки. */
+const BOTTLE_BACKGROUND = '#FDF9ED';
 /** Бутылка в каталоге ~1:4 — в чате это тонкая полоска. Дополняем фоном до 3:4. */
 const BOTTLE_CANVAS_WIDTH_TO_HEIGHT = 3 / 4;
 const BOTTLE_JPEG_QUALITY = 85;

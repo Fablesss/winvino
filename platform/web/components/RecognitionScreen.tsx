@@ -34,8 +34,8 @@ function BackToCaptureFooter({ onBackToCapture, label }: { onBackToCapture: (() 
   if (!onBackToCapture) return null;
   return (
     // Под кнопку уезжает длинная карточка — линия сверху делает срез текста намеренным.
-    // На всю ширину экрана (-mx-5): иначе при дробном DPR видны швы по краям sticky-слоя.
-    <footer className="sticky bottom-0 -mx-5 mt-8 border-t border-line bg-paper px-5 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+    // На всю ширину экрана (-mx-6): иначе при дробном DPR видны швы по краям sticky-слоя.
+    <footer className="sticky bottom-0 -mx-6 mt-8 border-t border-line bg-paper px-6 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
       <ActionButton variant="primary" onClick={onBackToCapture}>
         {label}
       </ActionButton>
@@ -54,7 +54,7 @@ function CandidateRow({ candidate, onSelect }: { candidate: WineCandidate; onSel
       >
         <span className={`h-10 w-10 shrink-0 rounded-full ${wineSwatchClass(candidate.wine)}`} aria-hidden />
         <span className="min-w-0 flex-1">
-          <span className="block font-label text-lg leading-tight">{candidate.wine.title}</span>
+          <span className="block text-base leading-[1.5] font-semibold">{candidate.wine.title}</span>
           {origin && <span className="mt-0.5 block truncate text-sm text-hint">{origin}</span>}
         </span>
         <span className="shrink-0 text-sm text-hint tabular-nums">{formatConfidence(candidate.confidence)}</span>
@@ -93,7 +93,7 @@ function FoundWine({
 
         {candidates.length > 1 && (
           <section className="mt-10" aria-labelledby={`${headingId}-others`}>
-            <h2 id={`${headingId}-others`} className="text-lg font-semibold">
+            <h2 id={`${headingId}-others`} className="text-xl">
               {recognition.status === "ambiguous" ? "Похожие вина" : "Не то вино?"}
             </h2>
             <ul className="mt-2 divide-y divide-line border-y border-line">
@@ -122,8 +122,8 @@ function WineNotFound({
   return (
     <>
       <main className="flex flex-1 flex-col justify-center gap-5 py-8">
-        <img src={previewUrl} alt="Ваш снимок" className="aspect-[3/4] w-28 rounded-2xl bg-surface object-cover" />
-        <h1 className="text-[1.75rem] leading-tight font-semibold text-balance" tabIndex={-1}>
+        <img src={previewUrl} alt="Ваш снимок" className="aspect-[3/4] w-28 rounded-3xl bg-surface object-cover" />
+        <h1 className="text-[1.75rem] text-balance" tabIndex={-1}>
           {copy.title}
         </h1>
         <p className="max-w-[36ch] text-[1.0625rem] leading-relaxed text-hint">{copy.hint}</p>

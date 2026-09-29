@@ -4,14 +4,16 @@ const decimalFormat = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 
 
 export type WineFact = { label: string; value: string };
 
-/** Факты для карточки в порядке, в каком их ищут у полки. Пустые поля пропускаются. */
+/**
+ * Факты для карточки в порядке, в каком их ищут у полки. Пустые поля пропускаются.
+ * Рейтинга здесь нет: он показан бейджем на фото бутылки, как в каталоге.
+ */
 export function listWineFacts(wine: Wine): WineFact[] {
   const facts: Array<WineFact | null> = [
     wine.grapes.length > 0 ? { label: wine.grapes.length > 1 ? "Сорта" : "Сорт", value: wine.grapes.join(", ") } : null,
     wine.vintage !== null ? { label: "Урожай", value: String(wine.vintage) } : null,
     wine.alcoholPercent !== null ? { label: "Крепость", value: `${decimalFormat.format(wine.alcoholPercent)} %` } : null,
     wine.servingTemperatureC !== null ? { label: "Подавать при", value: formatTemperatureRange(wine.servingTemperatureC) } : null,
-    wine.rating !== null ? { label: "Рейтинг каталога", value: `${decimalFormat.format(wine.rating)} из 5` } : null,
   ];
   return facts.filter((fact): fact is WineFact => fact !== null);
 }

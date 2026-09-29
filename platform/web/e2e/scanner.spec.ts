@@ -113,6 +113,20 @@ test.describe("веб / PWA", () => {
     expect(new URL(page.url()).pathname).toBe("/");
   });
 
+  test("тёмная тема: тёмная бумага и перекрашенные фирменные картинки", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(26, 22, 20)");
+    // <picture> подменяет и логотип, и иллюстрацию сканера: светлые оригиналы на тёмном не читаются.
+    const themedArt = page.getByRole("img", { name: /Своё Вино|Этикетка в кадре/ });
+    await expect(themedArt).toHaveCount(2);
+    for (const art of await themedArt.all()) {
+      expect(await art.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain("-dark.svg");
+    }
+    await page.screenshot({ path: `${SCREENSHOTS_DIR}/capture-dark.png`, fullPage: true });
+  });
+
   test("PWA: манифест с иконками и зарегистрированный service worker", async ({ page, request }) => {
     const manifest = await (await request.get("/manifest.webmanifest")).json();
     expect(manifest).toMatchObject({ short_name: "winvino", display: "standalone", start_url: "/" });
@@ -143,12 +157,13 @@ test.describe("Telegram Mini App", () => {
     tgWebAppThemeParams: JSON.stringify(themeParams),
   }).toString();
 
-  test("берёт тему Telegram, а «Сканировать ещё» отдаёт нативной MainButton", async ({ page }) => {
+  test("держит фирменную палитру, а «Сканировать ещё» отдаёт нативной MainButton", async ({ page }) => {
     await stubRecognition(page, RECOGNITIONS.matched);
     await page.goto(`/#${launchHash}`);
 
     await expect(page.locator("html")).toHaveAttribute("data-telegram", "tdesktop");
-    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(23, 33, 43)");
+    // Тёмная тема клиента на цвета не влияет: внутри Telegram та же бумага vino-svoe.ru, что и в вебе.
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(254, 253, 250)");
 
     await takeLabelPhoto(page);
     await expect(page.getByRole("heading", { level: 1, name: "Бельбек Рислинг Резерв" })).toBeVisible();

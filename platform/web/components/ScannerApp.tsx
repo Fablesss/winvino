@@ -131,7 +131,7 @@ export function ScannerApp() {
   const isTelegram = telegram !== null;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6">
       {photoPicker.inputs}
       {scan.kind === "idle" && (
         <CaptureScreen onTakePhoto={photoPicker.openCamera} onChooseFromGallery={photoPicker.openGallery} installOption={installOption} />

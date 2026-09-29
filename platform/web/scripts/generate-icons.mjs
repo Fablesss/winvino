@@ -3,8 +3,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
 
-const RUBY = "#8A1C3B";
-const PAPER = "#F1F3EF";
+const RUBY = "#8F3D42";
+const PAPER = "#FEFDFA";
 
 // Бутылка с этикеткой в уголках видоискателя — «наведи камеру на вино». Координаты в боксе 512.
 function iconSvg({ cornerRadius, contentScale }) {

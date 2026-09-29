@@ -1,45 +1,46 @@
 @import "tailwindcss";
 
 /*
- * Своя палитра — для PWA и браузера. Внутри Telegram (html[data-telegram]) фон, текст и
- * кнопки берутся из темы клиента: telegram-web-app.js сам выставляет --tg-theme-*.
- * --paper и --ruby синхронны с app/brand.ts.
+ * Палитра, типографика и радиусы сняты с мобильной версии vino-svoe.ru (страница /wines):
+ * бумага #fefdfa, кремовые карточки #fdf9ed, бордо #8f3d42, заголовки Playfair Display.
+ * Фирменный вид держим везде — и в браузере, и внутри Telegram: тема клиента цвета не меняет.
+ * --paper и --action синхронны с app/brand.ts.
  */
 :root {
-  --paper: #f1f3ef;
-  --surface: #ffffff;
-  --ink: #1f2b25;
-  --hint: #66706a;
-  --line: #d8ddd6;
-  --action: #8a1c3b;
+  --paper: #fefdfa;
+  --surface: #fdf9ed;
+  --ink: #2c2a28;
+  --hint: #9a948f;
+  --line: #d7d4d2;
+  --action: #8f3d42;
+  --action-hover: #ab494f;
   --action-ink: #ffffff;
-  --link: #8a1c3b;
+  --action-soft: #f9f1f1;
+  --link: #8f3d42;
+  /* Полупрозрачная «пилюля» шапки поверх бумаги — как core-header__wrapper на сайте. */
+  --pill: #efdbc64d;
   color-scheme: light;
 }
 
+/*
+ * Тёмной темы на сайте нет — берём те же оттенки, но перевёрнутые:
+ * тёплый коричневый вместо кремового, осветлённое бордо, чтобы белый текст на кнопке читался.
+ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #151d19;
-    --surface: #1c2621;
-    --ink: #e7ebe7;
-    --hint: #98a29c;
-    --line: #2c3731;
-    --action: #c24a68;
+    --paper: #1a1614;
+    --surface: #241e1b;
+    --ink: #f2ece6;
+    --hint: #a89e97;
+    --line: #3a312d;
+    --action: #a9484e;
+    --action-hover: #c05a60;
     --action-ink: #ffffff;
-    --link: #e27d96;
+    --action-soft: #2f2320;
+    --link: #e0a2a5;
+    --pill: #efdbc61a;
     color-scheme: dark;
   }
-}
-
-html[data-telegram] {
-  --paper: var(--tg-theme-bg-color, #ffffff);
-  --surface: var(--tg-theme-secondary-bg-color, #f1f1f1);
-  --ink: var(--tg-theme-text-color, #000000);
-  --hint: var(--tg-theme-hint-color, #999999);
-  --line: var(--tg-theme-section-separator-color, rgb(128 128 128 / 0.25));
-  --action: var(--tg-theme-button-color, #2481cc);
-  --action-ink: var(--tg-theme-button-text-color, #ffffff);
-  --link: var(--tg-theme-link-color, #2481cc);
 }
 
 @theme inline {
@@ -49,23 +50,38 @@ html[data-telegram] {
   --color-hint: var(--hint);
   --color-line: var(--line);
   --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
   --color-action-ink: var(--action-ink);
+  --color-action-soft: var(--action-soft);
   --color-link: var(--link);
-  --font-sans: var(--font-onest), system-ui, sans-serif;
-  --font-label: var(--font-prata), Georgia, serif;
+  --color-pill: var(--pill);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif;
 }
 
-/* Цвет самого вина — поле, на котором стоит бутылка. Не зависит от темы: вино одного цвета везде. */
+/* Цвет самого вина — метка в списке кандидатов. Не зависит от темы: вино одного цвета везде. */
 .wine-swatch-white { background-color: #e6d890; }
 .wine-swatch-red { background-color: #7a1e33; }
 .wine-swatch-rose { background-color: #eca79c; }
 .wine-swatch-orange { background-color: #d4843a; }
 .wine-swatch-unknown { background-color: var(--line); }
 
+/* Бейдж рейтинга каталога: песочная плашка с бокалом. Светлая в любой теме, как на сайте. */
+.rating-badge {
+  background-color: #f8ecc9;
+  color: #8f3d42;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);
   -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 125%;
 }
 
 /* Полоса считывания поверх снимка, пока идёт распознавание. Единственная фоновая анимация. */
