@@ -1,0 +1,496 @@
+{
+ "kokur-2025": [
+  "kokur-suhoe-2025"
+ ],
+ "kokur-suhoe-2025": [
+  "kokur-2025"
+ ],
+ "agora-yachting-cabernet-sauvignon": [
+  "agora-yachting-sauvignon"
+ ],
+ "agora-yachting-sauvignon": [
+  "agora-yachting-cabernet-sauvignon"
+ ],
+ "aligote-avtorskoe-vino": [
+  "aligote-avtorskoe"
+ ],
+ "aligote-avtorskoe": [
+  "aligote-avtorskoe-vino"
+ ],
+ "derbent-vino-endemy-shardone-beloe-bryut-105-125": [
+  "derbent-vino-endemy-shardone-beloe-suhoe-13",
+  "vino-suhoe-beloe-endemy-shardone"
+ ],
+ "derbent-vino-endemy-shardone-beloe-suhoe-13": [
+  "derbent-vino-endemy-shardone-beloe-bryut-105-125",
+  "vino-suhoe-beloe-endemy-shardone"
+ ],
+ "vino-suhoe-beloe-endemy-shardone": [
+  "derbent-vino-endemy-shardone-beloe-bryut-105-125",
+  "derbent-vino-endemy-shardone-beloe-suhoe-13"
+ ],
+ "kuban-vino-aristov-kaberne-sovinon-roze-2020-rozovoe-suhoe-12": [
+  "kuban-vino-aristov-kaberne-sovinon-roze-rozovoe-suhoe-12"
+ ],
+ "kuban-vino-aristov-kaberne-sovinon-roze-rozovoe-suhoe-12": [
+  "kuban-vino-aristov-kaberne-sovinon-roze-2020-rozovoe-suhoe-12"
+ ],
+ "legato-legato-sovinon-blan-beloe-suhoe-125": [
+  "legato-legato-sovinon-blan-mtsvane-beloe-suhoe-125"
+ ],
+ "legato-legato-sovinon-blan-mtsvane-beloe-suhoe-125": [
+  "legato-legato-sovinon-blan-beloe-suhoe-125"
+ ],
+ "sober-bash-hihvi-amfora-beloe-suhoe-14": [
+  "sober-bash-hihvi-beloe-suhoe-15"
+ ],
+ "sober-bash-hihvi-beloe-suhoe-15": [
+  "sober-bash-hihvi-amfora-beloe-suhoe-14"
+ ],
+ "soyuz-vino-soyuz-vino-kaberne-sovinon-beg-in-boks-krasnoe-suhoe-11": [
+  "soyuz-vino-soyuz-vino-kaberne-sovinon-polusladkoe-beg-in-boks-krasnoe-12"
+ ],
+ "soyuz-vino-soyuz-vino-kaberne-sovinon-polusladkoe-beg-in-boks-krasnoe-12": [
+  "soyuz-vino-soyuz-vino-kaberne-sovinon-beg-in-boks-krasnoe-suhoe-11"
+ ],
+ "villa-urkusta-kaberne-sovinon-klassik-krasnoe-suhoe-12": [
+  "villa-urkusta-kaberne-sovinon-klassik-krasnoe-suhoe-139"
+ ],
+ "villa-urkusta-kaberne-sovinon-klassik-krasnoe-suhoe-139": [
+  "villa-urkusta-kaberne-sovinon-klassik-krasnoe-suhoe-12"
+ ],
+ "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj": [
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2"
+ ],
+ "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1": [
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2"
+ ],
+ "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2": [
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+  "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1"
+ ],
+ "kuban-vino-shato-tamane-shardone-beloe-suhoe-12": [
+  "shato-taman-shardone"
+ ],
+ "shato-taman-shardone": [
+  "kuban-vino-shato-tamane-shardone-beloe-suhoe-12"
+ ],
+ "le-k2-v-tumane-sovinon-blan-beloe-suhoe-127": [
+  "le-k2-v-tumane-sovinon-blan-beloe-suhoe-13"
+ ],
+ "le-k2-v-tumane-sovinon-blan-beloe-suhoe-13": [
+  "le-k2-v-tumane-sovinon-blan-beloe-suhoe-127"
+ ],
+ "usadba-rodnoe-gnezdo-4-elements-risling-beloe-polusuhoe-12": [
+  "usadba-rodnoe-gnezdo-4-elements-risling-beloe-suhoe-12"
+ ],
+ "usadba-rodnoe-gnezdo-4-elements-risling-beloe-suhoe-12": [
+  "usadba-rodnoe-gnezdo-4-elements-risling-beloe-polusuhoe-12"
+ ],
+ "vinodelnya-raevskoe-renessans-shardone-beloe-suhoe-127": [
+  "vinodelnya-raevskoe-renessans-shardone-beloe-suhoe-128"
+ ],
+ "vinodelnya-raevskoe-renessans-shardone-beloe-suhoe-128": [
+  "vinodelnya-raevskoe-renessans-shardone-beloe-suhoe-127"
+ ],
+ "vina-arpachina-arpachino-inohodets-kumshatskiy-beloe-ekstra-bryut-125": [
+  "vina-arpachina-arpachino-inohodets-aligote-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-puhlyakovskiy-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-sibirkovyy-beloe-ekstra-bryut-125"
+ ],
+ "vina-arpachina-arpachino-inohodets-puhlyakovskiy-beloe-ekstra-bryut-125": [
+  "vina-arpachina-arpachino-inohodets-aligote-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-kumshatskiy-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-sibirkovyy-beloe-ekstra-bryut-125"
+ ],
+ "vina-arpachina-arpachino-inohodets-sibirkovyy-beloe-ekstra-bryut-125": [
+  "vina-arpachina-arpachino-inohodets-aligote-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-kumshatskiy-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-puhlyakovskiy-beloe-ekstra-bryut-125"
+ ],
+ "vina-arpachina-arpachino-inohodets-aligote-beloe-ekstra-bryut-125": [
+  "vina-arpachina-arpachino-inohodets-kumshatskiy-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-puhlyakovskiy-beloe-ekstra-bryut-125",
+  "vina-arpachina-arpachino-inohodets-sibirkovyy-beloe-ekstra-bryut-125"
+ ],
+ "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-polusladkoe-12": [
+  "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-suhoe-12"
+ ],
+ "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-suhoe-12": [
+  "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-polusladkoe-12"
+ ],
+ "vinodelnya-myshako-marselan-krasnoe-suhoe-143": [
+  "vinodelnya-myshako-marselan-krasnoe-suhoe-144"
+ ],
+ "vinodelnya-myshako-marselan-krasnoe-suhoe-144": [
+  "vinodelnya-myshako-marselan-krasnoe-suhoe-143"
+ ],
+ "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar": [
+  "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1"
+ ],
+ "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1": [
+  "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar"
+ ],
+ "alma-valley-solntse-vozduh-vinograd-merlo-krasnoe-polusladkoe-14": [
+  "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135"
+ ],
+ "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135": [
+  "alma-valley-solntse-vozduh-vinograd-merlo-krasnoe-polusladkoe-14"
+ ],
+ "shato-pino-shiraz-krasnoe-suhoe-135": [
+  "shato-pino-shiraz-krasnoe-suhoe-14"
+ ],
+ "shato-pino-shiraz-krasnoe-suhoe-14": [
+  "shato-pino-shiraz-krasnoe-suhoe-135"
+ ],
+ "vinodelnya-krinitsa-ester-muskat-beloe-suhoe-128": [
+  "vinodelnya-krinitsa-ester-muskat-belyy-beloe-suhoe-12"
+ ],
+ "vinodelnya-krinitsa-ester-muskat-belyy-beloe-suhoe-12": [
+  "vinodelnya-krinitsa-ester-muskat-beloe-suhoe-128"
+ ],
+ "vinodelnya-krinitsa-azyur-risling-beloe-suhoe-127": [
+  "vinodelnya-krinitsa-azyur-vione-beloe-suhoe-12"
+ ],
+ "vinodelnya-krinitsa-azyur-vione-beloe-suhoe-12": [
+  "vinodelnya-krinitsa-azyur-risling-beloe-suhoe-127"
+ ],
+ "zhemchuzhnaya-9-czitron-shardone": [
+  "zhemchuzhnaya-9-czitron-shardone-1"
+ ],
+ "zhemchuzhnaya-9-czitron-shardone-1": [
+  "zhemchuzhnaya-9-czitron-shardone"
+ ],
+ "imenie-sikory-risling-semeynyy-rezerv-beloe-suhoe-13": [
+  "imenie-sikory-risling-semeynyy-rezerv-risling-reynskiy-beloe-suhoe-13"
+ ],
+ "imenie-sikory-risling-semeynyy-rezerv-risling-reynskiy-beloe-suhoe-13": [
+  "imenie-sikory-risling-semeynyy-rezerv-beloe-suhoe-13"
+ ],
+ "abrau-dyurso-shardone-beloe-suhoe-12": [
+  "abrau-dyurso-shardone-beloe-suhoe-13"
+ ],
+ "abrau-dyurso-shardone-beloe-suhoe-13": [
+  "abrau-dyurso-shardone-beloe-suhoe-12"
+ ],
+ "esse-pino-gri-beloe-suhoe-12": [
+  "esse-pino-gri-beloe-suhoe-135"
+ ],
+ "esse-pino-gri-beloe-suhoe-135": [
+  "esse-pino-gri-beloe-suhoe-12"
+ ],
+ "villa-sofiya-trio-beloe-risling-suhoe-12": [
+  "villa-sofiya-trio-beloe-risling-suhoe-123"
+ ],
+ "villa-sofiya-trio-beloe-risling-suhoe-123": [
+  "villa-sofiya-trio-beloe-risling-suhoe-12"
+ ],
+ "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-115": [
+  "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125"
+ ],
+ "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125": [
+  "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-115"
+ ],
+ "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-12": [
+  "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125"
+ ],
+ "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125": [
+  "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-12"
+ ],
+ "domaine-lipko-white-blend-muskat-beloe-polusuhoe-12": [
+  "domaine-lipko-white-blend-tsitronnyy-magaracha-beloe-suhoe-115"
+ ],
+ "domaine-lipko-white-blend-tsitronnyy-magaracha-beloe-suhoe-115": [
+  "domaine-lipko-white-blend-muskat-beloe-polusuhoe-12"
+ ],
+ "alma-valley-solntse-vozduh-vinograd-kokur-beloe-polusladkoe-13": [
+  "alma-valley-solntse-vozduh-vinograd-shardone-beloe-polusuhoe-13"
+ ],
+ "alma-valley-solntse-vozduh-vinograd-shardone-beloe-polusuhoe-13": [
+  "alma-valley-solntse-vozduh-vinograd-kokur-beloe-polusladkoe-13"
+ ],
+ "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13": [
+  "fanagoriya-velvet-season-risling-beloe-sladkoe-12"
+ ],
+ "fanagoriya-velvet-season-risling-beloe-sladkoe-12": [
+  "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13"
+ ],
+ "villa-sofiya-risling-beloe-suhoe-12": [
+  "villa-sofiya-risling-beloe-suhoe-131"
+ ],
+ "villa-sofiya-risling-beloe-suhoe-131": [
+  "villa-sofiya-risling-beloe-suhoe-12"
+ ],
+ "vinodelnya-myshako-shardone-beloe-suhoe-123": [
+  "vinodelnya-myshako-shardone-beloe-suhoe-145"
+ ],
+ "vinodelnya-myshako-shardone-beloe-suhoe-145": [
+  "vinodelnya-myshako-shardone-beloe-suhoe-123"
+ ],
+ "villa-sofiya-sovinon-blan-beloe-suhoe-123": [
+  "villa-sofiya-sovinon-blan-beloe-suhoe-14"
+ ],
+ "villa-sofiya-sovinon-blan-beloe-suhoe-14": [
+  "villa-sofiya-sovinon-blan-beloe-suhoe-123"
+ ],
+ "vinodelnya-molchanova-krasnostop-zolotovskiy-krasnoe-suhoe-13": [
+  "vinodelnya-molchanova-krasnostop-zolotovskiy-krasnoe-suhoe-135"
+ ],
+ "vinodelnya-molchanova-krasnostop-zolotovskiy-krasnoe-suhoe-135": [
+  "vinodelnya-molchanova-krasnostop-zolotovskiy-krasnoe-suhoe-13"
+ ],
+ "privat": [
+  "solnechnaya-dolina-privat-kaberne-sovinon-krasnoe-sladkoe-155"
+ ],
+ "solnechnaya-dolina-privat-kaberne-sovinon-krasnoe-sladkoe-155": [
+  "privat"
+ ],
+ "vysokij-bereg-risling-zelenaya-seriya-1": [
+  "vysokij-bereg-risling-zelenaya-seriya",
+  "vysokij-bereg-risling-zelenaya-seriya-2"
+ ],
+ "vysokij-bereg-risling-zelenaya-seriya-2": [
+  "vysokij-bereg-risling-zelenaya-seriya",
+  "vysokij-bereg-risling-zelenaya-seriya-1"
+ ],
+ "vysokij-bereg-risling-zelenaya-seriya": [
+  "vysokij-bereg-risling-zelenaya-seriya-1",
+  "vysokij-bereg-risling-zelenaya-seriya-2"
+ ],
+ "alma-valley-merlo-rezerv-krasnoe-suhoe-14": [
+  "alma-valley-merlo-rezerv-krasnoe-suhoe-15"
+ ],
+ "alma-valley-merlo-rezerv-krasnoe-suhoe-15": [
+  "alma-valley-merlo-rezerv-krasnoe-suhoe-14"
+ ],
+ "alma-valley-shardone-rezerv-beloe-suhoe-135": [
+  "alma-valley-shardone-rezerv-beloe-suhoe-14"
+ ],
+ "alma-valley-shardone-rezerv-beloe-suhoe-14": [
+  "alma-valley-shardone-rezerv-beloe-suhoe-135"
+ ],
+ "golubitskoe-estate-kaberne-sovinon-rezerv-krasnoe-suhoe-125": [
+  "pomeste-golubitskoe-kaberne-sovinon-rezerv-krasnoe-suhoe-143"
+ ],
+ "pomeste-golubitskoe-kaberne-sovinon-rezerv-krasnoe-suhoe-143": [
+  "golubitskoe-estate-kaberne-sovinon-rezerv-krasnoe-suhoe-125"
+ ],
+ "rem-akchurin-risling-beloe-polusuhoe-12": [
+  "rem-akchurin-risling-beloe-suhoe-125"
+ ],
+ "rem-akchurin-risling-beloe-suhoe-125": [
+  "rem-akchurin-risling-beloe-polusuhoe-12"
+ ],
+ "loco-cimbali-risling-beloe-suhoe-125": [
+  "loco-cimbali-risling-risling-reynskiy-beloe-suhoe-13"
+ ],
+ "loco-cimbali-risling-risling-reynskiy-beloe-suhoe-13": [
+  "loco-cimbali-risling-beloe-suhoe-125"
+ ],
+ "derbent-vino-endemy-sovinon-beloe-bryut-105-125": [
+  "vino-suhoe-beloe-endemy-sovinon"
+ ],
+ "vino-suhoe-beloe-endemy-sovinon": [
+  "derbent-vino-endemy-sovinon-beloe-bryut-105-125"
+ ],
+ "vinodelnya-berdyaeva-risling-beloe-polusuhoe-108": [
+  "vinodelnya-berdyaeva-risling-risling-reynskiy-beloe-suhoe-121"
+ ],
+ "vinodelnya-berdyaeva-risling-risling-reynskiy-beloe-suhoe-121": [
+  "vinodelnya-berdyaeva-risling-beloe-polusuhoe-108"
+ ],
+ "golubitskoe-estate-tte-de-cheval-bryut-risling-beloe-12": [
+  "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12"
+ ],
+ "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12": [
+  "golubitskoe-estate-tte-de-cheval-bryut-risling-beloe-12"
+ ],
+ "golubitskoe-estate-shardone-rezerv-beloe-suhoe-135": [
+  "pomeste-golubitskoe-shardone-rezerv-beloe-suhoe-132"
+ ],
+ "pomeste-golubitskoe-shardone-rezerv-beloe-suhoe-132": [
+  "golubitskoe-estate-shardone-rezerv-beloe-suhoe-135"
+ ],
+ "valeriy-zaharin-aligote-burlyuk-beloe-bryut-115": [
+  "valeriy-zaharin-aligote-burlyuk-beloe-suhoe-13"
+ ],
+ "valeriy-zaharin-aligote-burlyuk-beloe-suhoe-13": [
+  "valeriy-zaharin-aligote-burlyuk-beloe-bryut-115"
+ ],
+ "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-115": [
+  "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-13"
+ ],
+ "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-13": [
+  "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-115"
+ ],
+ "cantiani-rkatsiteli": [
+  "cantiani-rkatsiteli-1"
+ ],
+ "cantiani-rkatsiteli-1": [
+  "cantiani-rkatsiteli"
+ ],
+ "golubitskoe-estate-tte-de-cheval-blanc-de-blancs-shardone-beloe-bryut-12": [
+  "pomeste-golubitskoe-tte-de-cheval-blanc-de-blancs-shardone-beloe-bryut-12"
+ ],
+ "pomeste-golubitskoe-tte-de-cheval-blanc-de-blancs-shardone-beloe-bryut-12": [
+  "golubitskoe-estate-tte-de-cheval-blanc-de-blancs-shardone-beloe-bryut-12"
+ ],
+ "le-k2-vassal-risling-beloe-suhoe-14": [
+  "le-k2-vassal-risling-reynskiy-beloe-suhoe-14"
+ ],
+ "le-k2-vassal-risling-reynskiy-beloe-suhoe-14": [
+  "le-k2-vassal-risling-beloe-suhoe-14"
+ ],
+ "abrau-dyurso-pino-nuar-krasnoe-suhoe-12": [
+  "abrau-dyurso-abrau-dyurso-pino-nuar-krasnoe-suhoe-13",
+  "abrau-dyurso-pino-nuar-krasnoe-suhoe-125"
+ ],
+ "abrau-dyurso-pino-nuar-krasnoe-suhoe-125": [
+  "abrau-dyurso-abrau-dyurso-pino-nuar-krasnoe-suhoe-13",
+  "abrau-dyurso-pino-nuar-krasnoe-suhoe-12"
+ ],
+ "abrau-dyurso-abrau-dyurso-pino-nuar-krasnoe-suhoe-13": [
+  "abrau-dyurso-pino-nuar-krasnoe-suhoe-12",
+  "abrau-dyurso-pino-nuar-krasnoe-suhoe-125"
+ ],
+ "abrau-dyurso-risling-beloe-suhoe-12": [
+  "abrau-dyurso-risling-beloe-suhoe-13"
+ ],
+ "abrau-dyurso-risling-beloe-suhoe-13": [
+  "abrau-dyurso-risling-beloe-suhoe-12"
+ ],
+ "cantiani-riesling": [
+  "cantiani-riesling-1"
+ ],
+ "cantiani-riesling-1": [
+  "cantiani-riesling"
+ ],
+ "derbent-vino-di-kaspiko-shardone-beloe-bryut-105-125": [
+  "derbent-vino-di-kaspiko-rkatsiteli-beloe-polusladkoe-11",
+  "derbent-vino-di-kaspiko-shardone-beloe-polusladkoe-105-125"
+ ],
+ "derbent-vino-di-kaspiko-shardone-beloe-polusladkoe-105-125": [
+  "derbent-vino-di-kaspiko-rkatsiteli-beloe-polusladkoe-11",
+  "derbent-vino-di-kaspiko-shardone-beloe-bryut-105-125"
+ ],
+ "derbent-vino-di-kaspiko-rkatsiteli-beloe-polusladkoe-11": [
+  "derbent-vino-di-kaspiko-shardone-beloe-bryut-105-125",
+  "derbent-vino-di-kaspiko-shardone-beloe-polusladkoe-105-125"
+ ],
+ "fanagoriya-par-amour-pervenets-magaracha-beloe-polusladkoe-105-125": [
+  "fanagoriya-par-amour-pervenets-magaracha-beloe-polusuhoe-105-125"
+ ],
+ "fanagoriya-par-amour-pervenets-magaracha-beloe-polusuhoe-105-125": [
+  "fanagoriya-par-amour-pervenets-magaracha-beloe-polusladkoe-105-125"
+ ],
+ "esse-brut-zero-dosage-shardone-beloe-ekstra-bryut-12": [
+  "esse-brut-zero-dosage-shardone-beloe-ekstra-bryut-135"
+ ],
+ "esse-brut-zero-dosage-shardone-beloe-ekstra-bryut-135": [
+  "esse-brut-zero-dosage-shardone-beloe-ekstra-bryut-12"
+ ],
+ "vinodelnya-vedernikov-tsimlyanskiy-chernyy-bryut-roze-rozovoe-129": [
+  "vinodelnya-vedernikov-tsimlyanskiy-chernyy-bryut-roze-rozovoe-14"
+ ],
+ "vinodelnya-vedernikov-tsimlyanskiy-chernyy-bryut-roze-rozovoe-14": [
+  "vinodelnya-vedernikov-tsimlyanskiy-chernyy-bryut-roze-rozovoe-129"
+ ],
+ "sober-bash-risling-risling-reynskiy-beloe-suhoe-11": [
+  "sober-bash-risling-risling-reynskiy-beloe-suhoe-12"
+ ],
+ "sober-bash-risling-risling-reynskiy-beloe-suhoe-12": [
+  "sober-bash-risling-risling-reynskiy-beloe-suhoe-11"
+ ],
+ "derbent-vino-endemy-saperavi-krasnoe-suhoe-13": [
+  "vino-suhoe-krasnoe-endemy-saperavi"
+ ],
+ "vino-suhoe-krasnoe-endemy-saperavi": [
+  "derbent-vino-endemy-saperavi-krasnoe-suhoe-13"
+ ],
+ "sober-bash-kaberne-fran-krasnoe-suhoe-127": [
+  "sober-bash-kaberne-fran-krasnoe-suhoe-13"
+ ],
+ "sober-bash-kaberne-fran-krasnoe-suhoe-13": [
+  "sober-bash-kaberne-fran-krasnoe-suhoe-127"
+ ],
+ "novyj-svet-shardone-kyuve-de-prestizh": [
+  "novyj-svet-shardone-kyuve-de-prestizh-1"
+ ],
+ "novyj-svet-shardone-kyuve-de-prestizh-1": [
+  "novyj-svet-shardone-kyuve-de-prestizh"
+ ],
+ "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-risling-125": [
+  "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-shardone-13"
+ ],
+ "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-shardone-13": [
+  "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-risling-125"
+ ],
+ "kuban-vino-shato-tamane-rezerv-myuller-turgau-limited-edishn-2021-beloe-suhoe-12": [
+  "kuban-vino-shato-tamane-rezerv-myuller-turgau-limited-edishn-beloe-suhoe-13"
+ ],
+ "kuban-vino-shato-tamane-rezerv-myuller-turgau-limited-edishn-beloe-suhoe-13": [
+  "kuban-vino-shato-tamane-rezerv-myuller-turgau-limited-edishn-2021-beloe-suhoe-12"
+ ],
+ "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut": [
+  "abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12"
+ ],
+ "abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12": [
+  "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut"
+ ],
+ "valeriy-zaharin-sovinon-blan-valeriy-zaharin-beloe-polusladkoe-105": [
+  "valeriy-zaharin-sovinon-valeriy-zaharin-beloe-polusladkoe-125"
+ ],
+ "valeriy-zaharin-sovinon-valeriy-zaharin-beloe-polusladkoe-125": [
+  "valeriy-zaharin-sovinon-blan-valeriy-zaharin-beloe-polusladkoe-105"
+ ],
+ "novyj-svet-kaberne": [
+  "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11"
+ ],
+ "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11": [
+  "novyj-svet-kaberne"
+ ],
+ "novyj-svet-paradizio": [
+  "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-paradizio-shardone-125"
+ ],
+ "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-paradizio-shardone-125": [
+  "novyj-svet-paradizio"
+ ],
+ "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-polusladkoe": [
+  "abrau-dyurso-imperatorskoe-polusladkoe-shardone-beloe-12"
+ ],
+ "abrau-dyurso-imperatorskoe-polusladkoe-shardone-beloe-12": [
+  "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-polusladkoe"
+ ],
+ "dva-serdtsa-muskat-muskat-belyy-beloe-polusuhoe-12": [
+  "dva-serdtsa-muskat-suhoy-muskat-belyy-beloe-suhoe-12"
+ ],
+ "dva-serdtsa-muskat-suhoy-muskat-belyy-beloe-suhoe-12": [
+  "dva-serdtsa-muskat-muskat-belyy-beloe-polusuhoe-12"
+ ],
+ "belbek-belbek-risling-beloe-suhoe-128": [
+  "belbek-risling-risling-reynskiy-beloe-suhoe-12"
+ ],
+ "belbek-risling-risling-reynskiy-beloe-suhoe-12": [
+  "belbek-belbek-risling-beloe-suhoe-128"
+ ],
+ "soyuz-vino-konfessa-sandzhoveze-krasnoe-suhoe-11": [
+  "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11"
+ ],
+ "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11": [
+  "soyuz-vino-konfessa-sandzhoveze-krasnoe-suhoe-11"
+ ],
+ "novyj-svet-kaberne-sovinon-polusladkoe": [
+  "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-krasnoe-novyy-svet-kaberne-sovinon-12"
+ ],
+ "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-krasnoe-novyy-svet-kaberne-sovinon-12": [
+  "novyj-svet-kaberne-sovinon-polusladkoe"
+ ],
+ "vibes-chardonnay-barrel-fermented-2021": [
+  "vibes-chardonnay-barrel-fermented-shardone-beloe-suhoe-125"
+ ],
+ "vibes-chardonnay-barrel-fermented-shardone-beloe-suhoe-125": [
+  "vibes-chardonnay-barrel-fermented-2021"
+ ]
+}

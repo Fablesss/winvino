@@ -19,7 +19,7 @@ from PIL import Image
 
 from .backbones import Encoder
 from .common import MODEL_DIR, load_catalog, load_rgb
-from .evalset import REAL_DIR, build_synthetic, load_queries
+from .evalset import REAL_DIR, build_synthetic, drop_excluded, load_queries
 from .evaluate import summarize
 from .locate import BottleLocator
 from .retrieval import build_index
@@ -84,8 +84,8 @@ def main() -> int:
 
     report = {"tag": tag}
     for set_name, queries in (
-        ("synthetic", build_synthetic(catalog, args.n, args.seed)),
-        ("real", [q for q in load_queries(REAL_DIR / "queries.jsonl") if q.target_image]),
+        ("synthetic", drop_excluded(build_synthetic(catalog, args.n, args.seed))),
+        ("real", drop_excluded([q for q in load_queries(REAL_DIR / "queries.jsonl") if q.target_image])),
     ):
         images = []
         for q in queries:

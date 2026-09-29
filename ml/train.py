@@ -30,7 +30,7 @@ from torch.utils.data import DataLoader, Dataset
 from .backbones import Encoder
 from .common import MODEL_DIR, cutout, letterbox, load_cached, load_catalog, load_rgb
 from .eval_visual import STRATEGIES, rank, sim_tensors
-from .evalset import REAL_DIR, build_synthetic, load_queries, real_upload_names
+from .evalset import REAL_DIR, build_synthetic, drop_excluded, load_queries, real_upload_names
 from .evaluate import summarize
 from .locate import BottleLocator
 from .retrieval import build_index
@@ -170,8 +170,8 @@ def main() -> int:
         opt, lambda s: (s + 1) / warmup if s < warmup else 0.5 * (1 + math.cos(math.pi * (s - warmup) / max(1, total - warmup))))
 
     loc = BottleLocator(device)
-    synth_q = build_synthetic(catalog, 1000, 1)[: args.eval_n]
-    real_q = [q for q in load_queries(REAL_DIR / "queries.jsonl") if q.target_image]
+    synth_q = drop_excluded(build_synthetic(catalog, 1000, 1)[: args.eval_n])
+    real_q = drop_excluded([q for q in load_queries(REAL_DIR / "queries.jsonl") if q.target_image])
     out_dir = MODEL_DIR / "checkpoints"
     out_dir.mkdir(parents=True, exist_ok=True)
     log_path = out_dir / f"{args.tag}.log.jsonl"

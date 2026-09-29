@@ -8,6 +8,7 @@
 // обучении, поэтому слияние учится на 300:700, а меряется на 700:1000 и реальных фото).
 // Реальные: data/raw/dataset/real/queries.jsonl, эталон — точный слаг; slug null — вина
 // нет в каталоге, такие кадры показывают, какую уверенность получает «уверенное враньё».
+// Кадры из data/eval-exclusions.jsonl в top-1 не идут: там ошибка от данных, а не от распознавания.
 import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_WEIGHTS, fitWeights, scoreCandidates } from './lib/fusion.mjs';
@@ -22,11 +23,29 @@ const flag = (name) => process.argv.includes(`--${name}`);
 const range = (s) => { const [a, b] = s.split(':').map(Number); return [a, b]; };
 
 const MODEL_DIR = path.join(ROOT, 'data', 'raw', 'model');
-const SYNTH_MANIFEST = path.join(ROOT, 'data', 'raw', 'dataset', 'synthetic-eval', 'queries-1-1000.jsonl');
+// --synthetic-manifest подставляет другой синтетический набор (например собранный из крупных
+// рендеров в большом кадре, где текст этикетки читается) — см. ml/evalset.py.
+const SYNTH_MANIFEST = path.resolve(ROOT, arg('synthetic-manifest',
+  path.join('data', 'raw', 'dataset', 'synthetic-eval', 'queries-1-1000.jsonl')));
 const REAL_MANIFEST = path.join(ROOT, 'data', 'raw', 'dataset', 'real', 'queries.jsonl');
 const OCR_CACHE = path.join(MODEL_DIR, 'ocr-cache.jsonl');
+// --exclusions подменяет список целиком: так «а что будет, если убрать ещё и эти кадры»
+// считается, не трогая закоммиченный набор.
+const EXCLUSIONS = path.resolve(ROOT, arg('exclusions', path.join('data', 'eval-exclusions.jsonl')));
 
 const readJsonl = (p) => fs.readFileSync(p, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
+
+// Ключ кадра — «папка набора/файл», как в EXCLUSIONS; записи с Windows хранят путь через «\».
+const frameKey = (file) => file.replaceAll('\\', '/').split('/').slice(-2).join('/');
+const excluded = new Set(readJsonl(EXCLUSIONS).map((e) => e.file));
+/** Кадр идёт в оценку. Кадры без эталона — проверка отказа, они остаются, хоть и в списке. */
+const scored = (q) => q.set === 'real_absent' || !excluded.has(frameKey(q.file));
+
+// Слаги-двойники: одно вино заведено в каталоге дважды. Ответ «то же вино, другой слаг» —
+// не ошибка распознавания, поэтому любой слаг класса считается верным. Файл собирается
+// scripts/build-eval-exclusions.mjs; без --twins поведение прежнее.
+const twins = new Map(Object.entries(arg('twins') ? JSON.parse(fs.readFileSync(path.resolve(ROOT, arg('twins')), 'utf8')) : {}));
+const withTwins = (slugs) => new Set(slugs.flatMap((s) => [s, ...(twins.get(s) ?? [])]));
 
 function loadQueries(synthRange) {
   const slugsByImage = new Map();
@@ -44,7 +63,7 @@ function loadQueries(synthRange) {
     set: q.slug ? 'real' : 'real_absent', idx: i, file: path.join(path.dirname(REAL_MANIFEST), q.file),
     correct: q.slug ? [q.slug] : [],
   }));
-  return [...synth, ...real];
+  return [...synth, ...real].filter(scored);
 }
 
 function metrics(records, weights) {
@@ -56,7 +75,7 @@ function metrics(records, weights) {
     const bins = Array.from({ length: 10 }, () => ({ n: 0, conf: 0, acc: 0 }));
     for (const r of rs) {
       const ranked = scoreCandidates(r.cands, weights);
-      const correct = new Set(r.correct);
+      const correct = withTwins(r.correct);
       const hit1 = ranked[0] && correct.has(ranked[0].slug);
       top1 += hit1 ? 1 : 0;
       top5 += ranked.slice(0, 5).some((c) => correct.has(c.slug)) ? 1 : 0;
@@ -118,8 +137,9 @@ async function collect(queries, checkpoint, tag) {
 const checkpoint = arg('checkpoint');
 const tag = arg('tag', checkpoint ? path.basename(checkpoint, '.pt') : 'zeroshot');
 const records = arg('records')
-  ? readJsonl(path.resolve(ROOT, arg('records')))
+  ? readJsonl(path.resolve(ROOT, arg('records'))).filter(scored)
   : await collect(loadQueries(range(arg('synthetic', '300:1000'))), checkpoint, tag);
+console.log(`исключено из top-1 по ${path.relative(ROOT, EXCLUSIONS)}, кадров: ${excluded.size} (без эталона остаются проверкой отказа)`);
 
 console.log('\nвеса по умолчанию (визуал + слабый текст):');
 console.log(JSON.stringify(metrics(records, DEFAULT_WEIGHTS), null, 1));
@@ -127,7 +147,7 @@ console.log(JSON.stringify(metrics(records, DEFAULT_WEIGHTS), null, 1));
 if (arg('fit')) {
   const [a, b] = range(arg('fit'));
   const isTrain = (r) => r.set === 'synthetic' && r.idx >= a && r.idx < b;
-  const train = records.filter(isTrain).map((r) => ({ cands: r.cands, correct: new Set(r.correct) }));
+  const train = records.filter(isTrain).map((r) => ({ cands: r.cands, correct: withTwins(r.correct) }));
   console.log(`\nобучение слияния на синтетике ${a}:${b} (${train.length} запросов)`);
   const weights = fitWeights(train);
   console.log('веса:', JSON.stringify(Object.fromEntries(Object.entries(weights).map(([k, v]) => [k, Number(v.toFixed(3))]))));
