@@ -1,5 +1,8 @@
 node_modules/
 
+# локальные настройки агента: хуки с абсолютными путями этой машины
+.claude/
+
 # Python-окружения: PaddleOCR и распознавание (torch)
 .venv-ocr/
 .venv-ml/
